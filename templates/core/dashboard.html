@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% load static core_tags %}
+{% block title %}{{ T.dashboard }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.welcome }}, {{ user.first_name|default:user.username }}</span>
+        <h1>{{ T.dashboard }}</h1>
+        <p>{{ today|date:"l, d F Y" }} · {{ site.company_name }}</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'operations:create' %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="plus" %} {{ T.add_property }}</a>
+        <a href="{% url 'crm:client_create' %}" class="btn btn--primary btn--sm">{% include "partials/icon.html" with name="plus" %} {{ T.add_client }}</a>
+    </div>
+</div>
+
+<div class="stat-grid dashboard-stats">
+    {% for stat in stats %}
+        <a href="{% url stat.url %}" class="stat-card stat-card--{{ stat.tone }}">
+            <span class="stat-card__icon">{% include "partials/icon.html" with name=stat.icon %}</span>
+            <span class="stat-card__body">
+                <small>{{ stat.label|tr }}</small>
+                <strong>{{ stat.value }}</strong>
+            </span>
+            <span class="stat-card__arrow">{% include "partials/icon.html" with name="arrow-right" %}</span>
+        </a>
+    {% endfor %}
+</div>
+
+<div class="dashboard-grid">
+    <section class="panel panel--chart">
+        <div class="panel-head">
+            <div>
+                <h2>{{ T.monthly_properties }}</h2>
+                <p>{{ T.monthly_properties_help }}</p>
+            </div>
+            <a href="{% url 'core:reports' %}" class="text-link">{{ T.reports }} →</a>
+        </div>
+        <div class="bar-chart">
+            {% for item in monthly_properties %}
+                <div class="bar-chart__item">
+                    <span class="bar-chart__value">{{ item.count }}</span>
+                    <div class="bar-chart__track">
+                        <span class="bar-chart__bar" style="height: {{ item.height }}%"></span>
+                    </div>
+                    <span class="bar-chart__label">{{ item.label }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="panel panel--target">
+        <div class="panel-head">
+            <div>
+                <h2>{% if target_obj %}{{ T.my_target }}{% else %}{{ T.performance }}{% endif %}</h2>
+                <p>{{ today|date:"d M Y" }}</p>
+            </div>
+            <a href="{% url 'operations:target_create' %}" class="icon-button icon-button--soft" title="{{ T.set_target }}">{% include "partials/icon.html" with name="target" %}</a>
+        </div>
+        {% if target_obj %}
+            <div class="target-ring" style="--progress: {{ target_obj.progress_percent }}%">
+                <div class="target-ring__inner" dir="ltr">
+                    <strong>{{ target_obj.achieved_count }}</strong>
+                    <span>/ {{ target_obj.target_count }}</span>
+                </div>
+            </div>
+            <div class="target-meta">
+                <span>{{ T.achieved }}: <strong>{{ target_obj.achieved_count }}</strong></span>
+                <span>{{ T.remaining }}: <strong>{{ target_obj.remaining_count }}</strong></span>
+            </div>
+        {% elif target_summary %}
+            <div class="target-summary">
+                <div class="target-summary__top" dir="ltr">
+                    <strong>{{ target_summary.achieved }}</strong>
+                    <span>/ {{ target_summary.target }}</span>
+                </div>
+                <div class="progress progress--lg"><span style="width: {{ target_summary.percent }}%"></span></div>
+                <p>
+                    {% if is_urdu %}
+                        {{ T.of_todays_branch_target }} <bdi dir="ltr">{{ target_summary.percent }}%</bdi>
+                    {% else %}
+                        <bdi dir="ltr">{{ target_summary.percent }}%</bdi> {{ T.of_todays_branch_target }}
+                    {% endif %}
+                </p>
+            </div>
+        {% else %}
+            <div class="empty-state empty-state--compact">
+                <strong>{{ T.no_target }}</strong>
+                <a href="{% url 'operations:target_create' %}" class="text-link">{{ T.set_target }} →</a>
+            </div>
+        {% endif %}
+        <a href="{% url 'operations:target_list' %}" class="btn btn--ghost btn--full btn--sm">{{ T.view_targets }}</a>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <div>
+                <h2>{{ T.property_status }}</h2>
+                <p>{{ total_properties }} {{ T.properties|lower }}</p>
+            </div>
+            <a href="{% url 'operations:list' %}" class="text-link">{{ T.view_all }} →</a>
+        </div>
+        <div class="status-list">
+            {% for item in property_status %}
+                <div class="status-row">
+                    <div class="status-row__label">
+                        <span class="status-dot status-dot--{{ item.key|status_tone }}"></span>
+                        <span>{{ item.label|tr }}</span>
+                    </div>
+                    <div class="status-row__bar"><span style="width: {{ item.percent }}%"></span></div>
+                    <strong>{{ item.count }}</strong>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <div>
+                <h2>{{ T.commission }}</h2>
+                <p>{{ won_deals_count }} won {{ T.deals|lower }}</p>
+            </div>
+            <span class="feature-icon feature-icon--gold feature-icon--sm">{% include "partials/icon.html" with name="money" %}</span>
+        </div>
+        <div class="money-display">{{ commission_total|money }}</div>
+        <div class="panel-foot">
+            <span>{{ T.commission_help }}</span>
+            <a href="{% url 'crm:deal_list' %}" class="text-link">{{ T.deals }} →</a>
+        </div>
+    </section>
+</div>
+
+<div class="dashboard-grid dashboard-grid--tables">
+    <section class="panel panel--span2">
+        <div class="panel-head">
+            <div>
+                <h2>{{ T.recent_properties }}</h2>
+                <p>{{ total_properties }} total records</p>
+            </div>
+            <a href="{% url 'operations:list' %}" class="text-link">{{ T.view_all }} →</a>
+        </div>
+        {% if recent_properties %}
+            <div class="table-wrap">
+                <span class="table-scroll-hint">→</span>
+                <table class="data-table">
+                    <thead><tr><th>{{ T.property_code }}</th><th>{{ T.name }}</th><th>{{ T.status }}</th><th>{{ T.price }}</th><th></th></tr></thead>
+                    <tbody>
+                    {% for property in recent_properties %}
+                        <tr>
+                            <td><strong>{{ property.property_code }}</strong></td>
+                            <td>
+                                <span class="table-main">{{ property.title }}</span>
+                                <small>{{ property.city }} · {{ property.get_property_type_display }}</small>
+                            </td>
+                            <td><span class="badge badge--{{ property.status|status_tone }}">{{ property.get_status_display }}</span></td>
+                            <td>{{ property.price_display }}</td>
+                            <td class="table-action"><a href="{{ property.get_absolute_url }}" class="icon-button icon-button--soft">{% include "partials/icon.html" with name="eye" %}</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            {% include "partials/empty.html" with title="No properties yet" text="Registered properties will appear here." %}
+        {% endif %}
+    </section>
+
+    <section class="panel">
+        <div class="panel-head">
+            <div>
+                <h2>{{ T.recent_activity }}</h2>
+                <p>{{ T.recent_activity_help }}</p>
+            </div>
+        </div>
+        {% if recent_activity %}
+            <div class="activity-list">
+                {% for log in recent_activity %}
+                    <div class="activity-item">
+                        <span class="avatar avatar--xs">{{ log.actor.display_name|default:"System"|initials }}</span>
+                        <div>
+                            <p>{{ log.description|default:log.action }}</p>
+                            <small>{{ log.actor.display_name|default:"System" }} · {{ log.created_at|date:"d M, H:i" }}</small>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            {% include "partials/empty.html" with title="No activity yet" text="Actions will be recorded here." %}
+        {% endif %}
+    </section>
+
+    {% if recent_requests %}
+        <section class="panel panel--span2">
+            <div class="panel-head">
+                <div>
+                    <h2>{{ T.pending_approvals }}</h2>
+                    <p>{{ T.pending_requests_help }}</p>
+                </div>
+                <a href="{% url 'registrations:list' %}" class="text-link">{{ T.view_all }} →</a>
+            </div>
+            <div class="table-wrap">
+                <span class="table-scroll-hint">→</span>
+                <table class="data-table">
+                    <thead><tr><th>{{ T.request_no }}</th><th>{{ T.name }}</th><th>{{ T.applicant_type }}</th><th>{{ T.status }}</th><th></th></tr></thead>
+                    <tbody>
+                    {% for item in recent_requests %}
+                        <tr>
+                            <td><strong>{{ item.request_no }}</strong></td>
+                            <td><span class="table-main">{{ item.full_name }}</span><small><bdi dir="ltr">{{ item.phone }}</bdi></small></td>
+                            <td>{{ item.get_applicant_type_display }}</td>
+                            <td><span class="badge badge--{{ item.status|status_tone }}">{{ item.get_status_display }}</span></td>
+                            <td class="table-action"><a href="{% url 'registrations:detail' item.pk %}" class="icon-button icon-button--soft">{% include "partials/icon.html" with name="eye" %}</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-head">
+                <div>
+                    <h2>{{ T.top_fos }}</h2>
+                    <p>{{ T.this_month }}</p>
+                </div>
+            </div>
+            {% if top_fos %}
+                <div class="rank-list">
+                    {% for fo in top_fos %}
+                        <div class="rank-row">
+                            <span class="rank-number">{{ forloop.counter }}</span>
+                            <span class="avatar avatar--sm">{{ fo.display_name|initials }}</span>
+                            <div class="rank-row__text">
+                                <strong>{{ fo.display_name }}</strong>
+                                <small>{{ fo.branch.name|default:"No branch" }}</small>
+                            </div>
+                            <strong>{{ fo.month_properties }}</strong>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {% include "partials/empty.html" with title="No FO activity" text="Field officer rankings will appear here." %}
+            {% endif %}
+        </section>
+    {% endif %}
+</div>
+{% endblock %}

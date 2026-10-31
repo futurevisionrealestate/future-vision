@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ client.name }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <a href="{% url 'crm:client_list' %}" class="back-link">← {{ T.clients }}</a>
+        <span class="eyebrow">{{ client.client_code }}</span>
+        <h1>{{ client.name }}</h1>
+        <p>{{ client.get_client_type_display }} · {{ client.city }}{% if client.area %}, {{ client.area }}{% endif %}</p>
+    </div>
+    <div class="page-actions">
+        <span class="badge badge--{{ client.status|status_tone }} badge--lg">{{ client.get_status_display }}</span>
+        {% if can_edit %}<a href="{% url 'crm:client_edit' client.pk %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="edit" %} {{ T.edit }}</a>{% endif %}
+    </div>
+</div>
+
+<div class="detail-layout">
+    <div class="detail-main">
+        <section class="panel">
+            <div class="panel-head"><div><h2>Client profile</h2><p>Contact and requirements</p></div></div>
+            <div class="detail-grid detail-grid--three">
+                <div class="detail-item"><span>{{ T.phone }}</span><strong><a href="tel:{{ client.phone }}" class="ltr-inline">{{ client.phone }}</a></strong></div>
+                <div class="detail-item"><span>{{ T.email }}</span><strong>{{ client.email|default:"—" }}</strong></div>
+                <div class="detail-item"><span>{{ T.budget }}</span><strong>{{ client.budget_display }}</strong></div>
+                <div class="detail-item"><span>Source</span><strong>{{ client.get_source_display }}</strong></div>
+                <div class="detail-item"><span>{{ T.assigned_to }}</span><strong>{{ client.assigned_to.display_name|default:"Unassigned" }}</strong></div>
+                <div class="detail-item"><span>{{ T.branch }}</span><strong>{{ client.branch|default:"—" }}</strong></div>
+            </div>
+            {% if client.requirements %}
+                <div class="detail-block"><span>{{ T.requirements }}</span><p class="prose">{{ client.requirements|linebreaksbr }}</p></div>
+            {% endif %}
+            {% if client.notes %}
+                <div class="detail-block"><span>{{ T.notes }}</span><p class="prose">{{ client.notes|linebreaksbr }}</p></div>
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <div class="panel-head">
+                <div><h2>{{ T.deals }}</h2><p>Deals for this client</p></div>
+                <a href="{% url 'crm:deal_create' %}" class="text-link">{{ T.add_deal }} →</a>
+            </div>
+            {% if deals %}
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>{{ T.deal_code }}</th><th>{{ T.property }}</th><th>{{ T.deal_type }}</th><th>{{ T.amount }}</th><th>{{ T.status }}</th><th></th></tr></thead>
+                        <tbody>
+                        {% for deal in deals %}
+                            <tr>
+                                <td><strong>{{ deal.deal_code }}</strong></td>
+                                <td>{{ deal.property.title }}</td>
+                                <td>{{ deal.get_deal_type_display }}</td>
+                                <td>{{ deal.amount|money }}</td>
+                                <td><span class="badge badge--{{ deal.status|status_tone }}">{{ deal.get_status_display }}</span></td>
+                                <td class="table-action"><a href="{{ deal.get_absolute_url }}" class="icon-button icon-button--soft">{% include "partials/icon.html" with name="eye" %}</a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {% include "partials/empty.html" with title="No deals yet" text="Create a deal to connect this client to a property." %}
+            {% endif %}
+        </section>
+    </div>
+
+    <aside class="detail-side">
+        <section class="panel">
+            <div class="panel-head"><div><h2>Contact card</h2><p>Quick actions</p></div></div>
+            <div class="contact-card">
+                <span class="avatar avatar--lg">{{ client.name|initials }}</span>
+                <strong>{{ client.name }}</strong>
+                <a href="tel:{{ client.phone }}" class="contact-phone ltr-inline">{{ client.phone }}</a>
+                {% if client.email %}<a href="mailto:{{ client.email }}" class="muted">{{ client.email }}</a>{% endif %}
+                <a href="tel:{{ client.phone }}" class="btn btn--primary btn--full btn--sm">{% include "partials/icon.html" with name="phone" %} Call client</a>
+            </div>
+        </section>
+        <section class="panel">
+            <div class="panel-head"><div><h2>Record info</h2></div></div>
+            <div class="meta-list">
+                <div><span>{{ T.created_at }}</span><strong>{{ client.created_at|date:"d M Y, H:i" }}</strong></div>
+                <div><span>Created by</span><strong>{{ client.created_by.display_name }}</strong></div>
+                <div><span>{{ T.updated }}</span><strong>{{ client.updated_at|date:"d M Y, H:i" }}</strong></div>
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}

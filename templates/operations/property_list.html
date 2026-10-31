@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.properties }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.operations }}</span>
+        <h1>{{ T.properties }}</h1>
+        <p>Register, review, and track every property across the network.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'operations:export' %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="download" %} {{ T.export_csv }}</a>
+        <a href="{% url 'operations:create' %}" class="btn btn--primary btn--sm">{% include "partials/icon.html" with name="plus" %} {{ T.add_property }}</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field filter-field--wide">
+        <label for="{{ filters.q.id_for_label }}">{{ T.search }}</label>
+        {{ filters.q }}
+    </div>
+    <div class="filter-field">{{ filters.status }}</div>
+    <div class="filter-field">{{ filters.purpose }}</div>
+    <div class="filter-field">{{ filters.property_type }}</div>
+    <div class="filter-field">{{ filters.branch }}</div>
+    <button type="submit" class="btn btn--dark btn--sm">{{ T.filter }}</button>
+    <a href="{% url 'operations:list' %}" class="btn btn--ghost btn--sm">{{ T.cancel }}</a>
+</form>
+
+<div class="panel panel--flush">
+    {% if page_obj.object_list %}
+        <div class="table-wrap">
+            <span class="table-scroll-hint">→</span>
+            <table class="data-table data-table--properties">
+                <thead>
+                    <tr>
+                        <th>{{ T.property_code }}</th>
+                        <th>{{ T.properties }}</th>
+                        <th>{{ T.purpose }} / {{ T.property_type }}</th>
+                        <th>{{ T.size }}</th>
+                        <th>{{ T.price }}</th>
+                        <th>{{ T.status }}</th>
+                        <th>{{ T.created_at }}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for property in page_obj %}
+                    <tr>
+                        <td><strong>{{ property.property_code }}</strong></td>
+                        <td>
+                            <div class="table-media">
+                                {% if property.images.first %}
+                                    <img src="{{ property.images.first.image.url }}" alt="" class="table-thumb">
+                                {% else %}
+                                    <span class="table-thumb table-thumb--empty">{% include "partials/icon.html" with name="building" %}</span>
+                                {% endif %}
+                                <div>
+                                    <span class="table-main">{{ property.title }}</span>
+                                    <small>{{ property.city }}{% if property.area %}, {{ property.area }}{% endif %}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ property.get_purpose_display }}<small>{{ property.get_property_type_display }}</small></td>
+                        <td>{{ property.size_display }}</td>
+                        <td>{{ property.price_display }}</td>
+                        <td><span class="badge badge--{{ property.status|status_tone }}">{{ property.get_status_display }}</span></td>
+                        <td>{{ property.created_at|date:"d M Y" }}<small>{{ property.created_by.display_name }}</small></td>
+                        <td class="table-action">
+                            <a href="{{ property.get_absolute_url }}" class="icon-button icon-button--soft" title="{{ T.view }}">{% include "partials/icon.html" with name="eye" %}</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-foot panel-foot--pagination">
+            <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+            {% include "partials/pagination.html" %}
+        </div>
+    {% else %}
+        {% include "partials/empty.html" with title="No properties found" text="Try changing the filters or register the first property." %}
+    {% endif %}
+</div>
+{% endblock %}

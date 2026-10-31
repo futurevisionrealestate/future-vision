@@ -1,0 +1,96 @@
+{% load static core_tags %}
+<aside class="sidebar" id="sidebar">
+    <a href="{% url 'core:dashboard' %}" class="sidebar-brand">
+        <img src="{% static 'img/logo.jpeg' %}" alt="{{ site.company_name }}" class="brand-logo">
+        <span class="sidebar-brand__text">
+            <strong>{{ site.company_name }}</strong>
+            <small>{{ site.tagline }}</small>
+        </span>
+    </a>
+
+    <nav class="sidebar-nav" aria-label="Main navigation">
+        <p class="nav-caption">{{ T.overview }}</p>
+        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}" href="{% url 'core:dashboard' %}">
+            {% include "partials/icon.html" with name="dashboard" %}<span>{{ T.dashboard }}</span>
+        </a>
+
+        <p class="nav-caption">{{ T.management }}</p>
+        {% if user.is_fo or user.is_dealer %}
+            <a class="nav-link {% if request.resolver_match.url_name == 'my_application' %}is-active{% endif %}" href="{% url 'registrations:my_application' %}">
+                {% include "partials/icon.html" with name="clipboard" %}<span>{{ T.application_status }}</span>
+            </a>
+        {% elif user.can_review_registrations or user.can_final_approve or user.is_branch_manager or user.is_executive %}
+            <a class="nav-link {% if request.resolver_match.namespace == 'registrations' and request.resolver_match.url_name != 'my_application' %}is-active{% endif %}" href="{% url 'registrations:list' %}">
+                {% include "partials/icon.html" with name="clipboard" %}<span>{{ T.registrations }}</span>
+                {% if pending_approvals_count %}<span class="nav-badge">{{ pending_approvals_count }}</span>{% endif %}
+            </a>
+        {% endif %}
+        {% if user.can_manage_users or user.is_branch_manager %}
+            <a class="nav-link {% if request.resolver_match.namespace == 'accounts' and 'user' in request.resolver_match.url_name %}is-active{% endif %}" href="{% url 'accounts:user_list' %}">
+                {% include "partials/icon.html" with name="users" %}<span>{{ T.users }}</span>
+            </a>
+        {% endif %}
+        {% if user.can_manage_branches %}
+            <a class="nav-link {% if request.resolver_match.namespace == 'accounts' and 'branch' in request.resolver_match.url_name %}is-active{% endif %}" href="{% url 'accounts:branch_list' %}">
+                {% include "partials/icon.html" with name="branch" %}<span>{{ T.branches }}</span>
+            </a>
+        {% endif %}
+
+        <p class="nav-caption">{{ T.operations }}</p>
+        <a class="nav-link {% if request.resolver_match.namespace == 'operations' and request.resolver_match.url_name == 'list' %}is-active{% endif %}" href="{% url 'operations:list' %}">
+            {% include "partials/icon.html" with name="building" %}<span>{{ T.properties }}</span>
+        </a>
+        <a class="nav-link {% if request.resolver_match.namespace == 'crm' and request.resolver_match.url_name == 'client_list' %}is-active{% endif %}" href="{% url 'crm:client_list' %}">
+            {% include "partials/icon.html" with name="users" %}<span>{{ T.clients }}</span>
+        </a>
+        <a class="nav-link {% if request.resolver_match.namespace == 'crm' and request.resolver_match.url_name == 'deal_list' %}is-active{% endif %}" href="{% url 'crm:deal_list' %}">
+            {% include "partials/icon.html" with name="handshake" %}<span>{{ T.deals }}</span>
+        </a>
+        <a class="nav-link {% if request.resolver_match.namespace == 'operations' and 'target' in request.resolver_match.url_name %}is-active{% endif %}" href="{% url 'operations:target_list' %}">
+            {% include "partials/icon.html" with name="target" %}<span>{{ T.targets }}</span>
+        </a>
+
+        <p class="nav-caption">{{ T.analytics }}</p>
+        {% if user.can_access_reports %}
+            <a class="nav-link {% if request.resolver_match.url_name == 'reports' %}is-active{% endif %}" href="{% url 'core:reports' %}">
+                {% include "partials/icon.html" with name="chart" %}<span>{{ T.reports }}</span>
+            </a>
+        {% endif %}
+        {% if user.can_view_audit %}
+            <a class="nav-link {% if request.resolver_match.url_name == 'audit_logs' %}is-active{% endif %}" href="{% url 'core:audit_logs' %}">
+                {% include "partials/icon.html" with name="shield" %}<span>{{ T.audit_logs }}</span>
+            </a>
+        {% endif %}
+        {% if user.can_manage_users %}
+            <a class="nav-link {% if request.resolver_match.url_name == 'settings' %}is-active{% endif %}" href="{% url 'core:settings' %}">
+                {% include "partials/icon.html" with name="settings" %}<span>{{ T.settings }}</span>
+            </a>
+        {% endif %}
+    </nav>
+
+    <div class="sidebar-utility">
+        <form action="{% url 'set_language' %}" method="post" class="lang-form lang-form--sidebar">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" name="language" value="{% if is_urdu %}en{% else %}ur{% endif %}" class="sidebar-lang" title="{{ T.language }}">
+                {{ T.language }}: {% if is_urdu %}English{% else %}اردو{% endif %}
+            </button>
+        </form>
+    </div>
+
+    <div class="sidebar-footer">
+        <a href="{% url 'accounts:profile' %}" class="sidebar-user">
+            <span class="avatar">{{ user.display_name|initials }}</span>
+            <span class="sidebar-user__text">
+                <strong>{{ user.display_name }}</strong>
+                <small>{{ user.role_label }}</small>
+            </span>
+        </a>
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="sidebar-logout" title="{{ T.logout }}">
+                {% include "partials/icon.html" with name="logout" %}
+            </button>
+        </form>
+    </div>
+</aside>

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.deals }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.management }}</span>
+        <h1>{{ T.deals }}</h1>
+        <p>Track every sale and rental negotiation from open to closed.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'crm:deal_export' %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="download" %} {{ T.export_csv }}</a>
+        <a href="{% url 'crm:deal_create' %}" class="btn btn--primary btn--sm">{% include "partials/icon.html" with name="plus" %} {{ T.add_deal }}</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field filter-field--wide">
+        <label for="{{ filters.q.id_for_label }}">{{ T.search }}</label>
+        {{ filters.q }}
+    </div>
+    <div class="filter-field">{{ filters.status }}</div>
+    <div class="filter-field">{{ filters.deal_type }}</div>
+    <div class="filter-field">{{ filters.branch }}</div>
+    <button type="submit" class="btn btn--dark btn--sm">{{ T.filter }}</button>
+    <a href="{% url 'crm:deal_list' %}" class="btn btn--ghost btn--sm">{{ T.cancel }}</a>
+</form>
+
+<div class="panel panel--flush">
+    {% if page_obj.object_list %}
+        <div class="table-wrap">
+            <span class="table-scroll-hint">→</span>
+            <table class="data-table">
+                <thead><tr><th>{{ T.deal_code }}</th><th>{{ T.property }}</th><th>{{ T.clients }}</th><th>{{ T.deal_type }}</th><th>{{ T.amount }}</th><th>{{ T.commission }}</th><th>{{ T.status }}</th><th>{{ T.deal_date }}</th><th></th></tr></thead>
+                <tbody>
+                {% for deal in page_obj %}
+                    <tr>
+                        <td><strong>{{ deal.deal_code }}</strong></td>
+                        <td><span class="table-main">{{ deal.property.title }}</span><small>{{ deal.property.property_code }}</small></td>
+                        <td><span class="table-main">{{ deal.client.name }}</span><small><bdi dir="ltr">{{ deal.client.phone }}</bdi></small></td>
+                        <td>{{ deal.get_deal_type_display }}</td>
+                        <td>{{ deal.amount|money }}</td>
+                        <td>{{ deal.commission|money }}</td>
+                        <td><span class="badge badge--{{ deal.status|status_tone }}">{{ deal.get_status_display }}</span></td>
+                        <td>{{ deal.deal_date|date:"d M Y" }}</td>
+                        <td class="table-action"><a href="{{ deal.get_absolute_url }}" class="icon-button icon-button--soft">{% include "partials/icon.html" with name="eye" %}</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-foot panel-foot--pagination">
+            <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+            {% include "partials/pagination.html" %}
+        </div>
+    {% else %}
+        {% include "partials/empty.html" with title="No deals found" text="Create a deal or change your filters." %}
+    {% endif %}
+</div>
+{% endblock %}

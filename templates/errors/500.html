@@ -1,0 +1,14 @@
+{% extends "base_public.html" %}
+{% load core_tags %}
+{% block title %}{{ T.server_error }}{% endblock %}
+{% block content %}
+<section class="state-page">
+    <div class="state-card">
+        <span class="state-icon state-icon--danger">{% include "partials/icon.html" with name="shield" %}</span>
+        <span class="eyebrow">500</span>
+        <h1>{{ T.server_error }}</h1>
+        <p>Something went wrong while processing this request. Please try again or contact support.</p>
+        <a href="{% url 'core:home' %}" class="btn btn--primary">Back to home</a>
+    </div>
+</section>
+{% endblock %}

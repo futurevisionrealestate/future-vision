@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <a href="{% if property %}{{ property.get_absolute_url }}{% else %}{% url 'operations:list' %}{% endif %}" class="back-link">← {{ T.properties }}</a>
+        <span class="eyebrow">Property record</span>
+        <h1>{{ title }}</h1>
+        <p>Complete the listing details. New and edited listings are sent for approval.</p>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="form-shell form-shell--single" data-formset-form>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+        <div class="form-errors">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>
+    {% endif %}
+
+    <div class="form-card form-card--wide">
+        <fieldset class="form-section">
+            <legend><span>01</span> Listing details</legend>
+            <div class="form-grid form-grid--two">
+                {% include "partials/field.html" with field=form.title %}
+                {% include "partials/field.html" with field=form.property_type %}
+                {% include "partials/field.html" with field=form.purpose %}
+                {% include "partials/field.html" with field=form.branch %}
+                {% include "partials/field.html" with field=form.city %}
+                {% include "partials/field.html" with field=form.area %}
+                {% include "partials/field.html" with field=form.address %}
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend><span>02</span> Size & price</legend>
+            <div class="form-grid form-grid--three">
+                {% include "partials/field.html" with field=form.size_value %}
+                {% include "partials/field.html" with field=form.size_unit %}
+                {% include "partials/field.html" with field=form.price %}
+                {% include "partials/field.html" with field=form.bedrooms %}
+                {% include "partials/field.html" with field=form.bathrooms %}
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend><span>03</span> Owner & contact</legend>
+            <div class="form-grid form-grid--two">
+                {% include "partials/field.html" with field=form.owner_name %}
+                {% include "partials/field.html" with field=form.contact_name %}
+                {% include "partials/field.html" with field=form.contact_phone %}
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend><span>04</span> Description</legend>
+            <div class="form-grid">
+                {% include "partials/field.html" with field=form.description %}
+                {% include "partials/field.html" with field=form.features %}
+            </div>
+            <p class="form-hint">Put one feature per line, for example: Corner plot · Main road · Near park.</p>
+        </fieldset>
+    </div>
+
+    <div class="form-card form-card--wide">
+        <div class="panel-head">
+            <div><h2>{{ T.images }}</h2><p>Up to 8 photos. The first selected image can be marked as the cover.</p></div>
+        </div>
+        {{ formset.management_form }}
+        {% if formset.non_form_errors %}
+            <div class="form-errors">{% for error in formset.non_form_errors %}<p>{{ error }}</p>{% endfor %}</div>
+        {% endif %}
+        <div class="image-form-grid" data-formset-rows>
+            {% for image_form in formset %}
+                <div class="image-form" data-formset-row>
+                    {% for hidden in image_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="image-form__preview">
+                        {% if image_form.instance.pk and image_form.instance.image %}
+                            <img src="{{ image_form.instance.image.url }}" alt="">
+                        {% else %}
+                            <span>{% include "partials/icon.html" with name="building" %}</span>
+                        {% endif %}
+                    </div>
+                    <div class="image-form__fields">
+                        <label for="{{ image_form.image.id_for_label }}">{{ image_form.image.label }}</label>
+                        {{ image_form.image }}
+                        {% for error in image_form.image.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                        {{ image_form.caption }}
+                        {% for error in image_form.caption.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                        <label class="checkbox-label checkbox-label--small">{{ image_form.is_cover }} <span>{{ image_form.is_cover.label }}</span></label>
+                        {% if image_form.DELETE %}
+                            <label class="checkbox-label checkbox-label--danger">{{ image_form.DELETE }} <span>Remove this image</span></label>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn btn--ghost btn--sm" data-formset-add>{% include "partials/icon.html" with name="plus" %} Add another image</button>
+        <template data-formset-empty>
+            <div class="image-form" data-formset-row>
+                {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+                <div class="image-form__preview"><span>{% include "partials/icon.html" with name="building" %}</span></div>
+                <div class="image-form__fields">
+                    <label for="{{ formset.empty_form.image.id_for_label }}">{{ formset.empty_form.image.label }}</label>
+                    {{ formset.empty_form.image }}
+                    {{ formset.empty_form.caption }}
+                    <label class="checkbox-label checkbox-label--small">{{ formset.empty_form.is_cover }} <span>{{ formset.empty_form.is_cover.label }}</span></label>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <div class="form-actions form-actions--sticky">
+        <a href="{% if property %}{{ property.get_absolute_url }}{% else %}{% url 'operations:list' %}{% endif %}" class="btn btn--ghost">{{ T.cancel }}</a>
+        <button type="submit" class="btn btn--primary">{{ T.save_changes }}</button>
+    </div>
+</form>
+{% endblock %}

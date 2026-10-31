@@ -1,0 +1,70 @@
+{% load core_tags %}
+<header class="topbar">
+    <div class="topbar__left">
+        <button type="button" class="icon-button mobile-menu" data-sidebar-toggle aria-label="Open menu">
+            {% include "partials/icon.html" with name="menu" %}
+        </button>
+        <form class="topbar-search" method="get" action="{% url 'core:search' %}">
+            {% include "partials/icon.html" with name="search" %}
+            <input type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="{{ T.search_placeholder }}" aria-label="{{ T.search }}">
+        </form>
+    </div>
+    <div class="topbar__right">
+        <form action="{% url 'set_language' %}" method="post" class="lang-form lang-form--top">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" name="language" value="{% if is_urdu %}en{% else %}ur{% endif %}" class="lang-switch" title="{{ T.language }}">
+                {% if is_urdu %}English{% else %}اردو{% endif %}
+            </button>
+        </form>
+
+        <div class="dropdown" data-dropdown>
+            <button type="button" class="icon-button" data-dropdown-toggle aria-label="{{ T.notifications }}">
+                {% include "partials/icon.html" with name="bell" %}
+                {% if unread_notifications_count %}<span class="notification-dot">{{ unread_notifications_count }}</span>{% endif %}
+            </button>
+            <div class="dropdown-menu dropdown-menu--wide" data-dropdown-menu>
+                <div class="dropdown-head">
+                    <strong>{{ T.notifications }}</strong>
+                    <a href="{% url 'core:notifications' %}">{{ T.view_all }}</a>
+                </div>
+                {% if recent_notifications %}
+                    {% for note in recent_notifications %}
+                        <a class="dropdown-note" href="{% url 'core:notification_open' note.pk %}">
+                            <span class="dropdown-note__dot"></span>
+                            <span>
+                                <strong>{{ note.title }}</strong>
+                                <small>{{ note.message|truncatechars:70 }}</small>
+                            </span>
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <p class="dropdown-empty">{{ T.no_notifications }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="dropdown" data-dropdown>
+            <button type="button" class="user-chip" data-dropdown-toggle>
+                <span class="avatar avatar--sm">{{ user.display_name|initials }}</span>
+                <span class="user-chip__text">
+                    <strong>{{ user.display_name }}</strong>
+                    <small>{{ user.role_label }}</small>
+                </span>
+                <span class="chevron">⌄</span>
+            </button>
+            <div class="dropdown-menu" data-dropdown-menu>
+                <a href="{% url 'accounts:profile' %}" class="dropdown-link">{% include "partials/icon.html" with name="user" %} {{ T.profile }}</a>
+                <a href="{% url 'accounts:change_password' %}" class="dropdown-link">{% include "partials/icon.html" with name="lock" %} {{ T.change_password }}</a>
+                {% if user.can_manage_users %}
+                    <a href="{% url 'core:settings' %}" class="dropdown-link">{% include "partials/icon.html" with name="settings" %} {{ T.settings }}</a>
+                {% endif %}
+                <div class="dropdown-divider"></div>
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="dropdown-link dropdown-link--danger">{% include "partials/icon.html" with name="logout" %} {{ T.logout }}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>

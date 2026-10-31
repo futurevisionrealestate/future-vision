@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.branches }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.admin }}</span>
+        <h1>{{ T.branches }}</h1>
+        <p>Branch network, managers, and active staff.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'accounts:branch_create' %}" class="btn btn--primary btn--sm">{% include "partials/icon.html" with name="plus" %} {{ T.add_branch }}</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field filter-field--wide">
+        <label for="branch-q">{{ T.search }}</label>
+        <input type="search" name="q" id="branch-q" value="{{ q }}" class="form-input" placeholder="Name, code, or city">
+    </div>
+    <button type="submit" class="btn btn--dark btn--sm">{{ T.filter }}</button>
+    <a href="{% url 'accounts:branch_list' %}" class="btn btn--ghost btn--sm">{{ T.cancel }}</a>
+</form>
+
+<div class="panel panel--flush">
+    {% if page_obj.object_list %}
+        <div class="table-wrap">
+            <span class="table-scroll-hint">→</span>
+            <table class="data-table">
+                <thead><tr><th>{{ T.branch }}</th><th>Code</th><th>{{ T.city }}</th><th>Manager</th><th>Staff</th><th>{{ T.status }}</th><th></th></tr></thead>
+                <tbody>
+                {% for branch in page_obj %}
+                    <tr>
+                        <td><strong>{{ branch.name }}</strong><small><bdi dir="ltr">{{ branch.phone|default:"" }}</bdi></small></td>
+                        <td><span class="badge badge--navy">{{ branch.code }}</span></td>
+                        <td>{{ branch.city }}</td>
+                        <td>{{ branch.manager.display_name|default:"—" }}</td>
+                        <td>{{ branch.active_staff_count }}</td>
+                        <td>{% if branch.is_active %}<span class="badge badge--success">{{ T.active }}</span>{% else %}<span class="badge badge--muted">{{ T.inactive }}</span>{% endif %}</td>
+                        <td class="table-action"><a href="{% url 'accounts:branch_edit' branch.pk %}" class="icon-button icon-button--soft">{% include "partials/icon.html" with name="edit" %}</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-foot panel-foot--pagination">
+            <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+            {% include "partials/pagination.html" %}
+        </div>
+    {% else %}
+        {% include "partials/empty.html" with title="No branches found" text="Add the first branch to start building the network." %}
+    {% endif %}
+</div>
+{% endblock %}

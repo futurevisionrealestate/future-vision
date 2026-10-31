@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.reports }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.analytics }}</span>
+        <h1>{{ T.reports }}</h1>
+        <p>{{ start|date:"d M Y" }} – {{ end|date:"d M Y" }} · branch and network performance</p>
+    </div>
+    <div class="page-actions">
+        <button type="button" class="btn btn--ghost btn--sm" onclick="window.print()">{% include "partials/icon.html" with name="file" %} {{ T.print }}</button>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field">
+        <label for="report-start">From</label>
+        <input type="date" name="start" id="report-start" value="{{ start|date:'Y-m-d' }}" class="form-input">
+    </div>
+    <div class="filter-field">
+        <label for="report-end">To</label>
+        <input type="date" name="end" id="report-end" value="{{ end|date:'Y-m-d' }}" class="form-input">
+    </div>
+    <div class="filter-field">
+        <label for="report-branch">{{ T.branch }}</label>
+        <select name="branch" id="report-branch" class="form-select">
+            <option value="">All branches</option>
+            {% for branch in branches %}
+                <option value="{{ branch.pk }}" {% if branch_id == branch.pk|stringformat:"s" %}selected{% endif %}>{{ branch.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn--dark btn--sm">{{ T.filter }}</button>
+    <a href="{% url 'core:reports' %}" class="btn btn--ghost btn--sm">{{ T.cancel }}</a>
+</form>
+
+<div class="stat-grid stat-grid--reports">
+    <div class="stat-card stat-card--navy"><span class="stat-card__icon">{% include "partials/icon.html" with name="building" %}</span><span class="stat-card__body"><small>{{ T.total_properties }}</small><strong>{{ summary.properties }}</strong></span></div>
+    <div class="stat-card stat-card--gold"><span class="stat-card__icon">{% include "partials/icon.html" with name="money" %}</span><span class="stat-card__body"><small>Property value</small><strong>{{ summary.property_value|money }}</strong></span></div>
+    <div class="stat-card stat-card--success"><span class="stat-card__icon">{% include "partials/icon.html" with name="handshake" %}</span><span class="stat-card__body"><small>{{ T.won_deals }}</small><strong>{{ summary.won_deals }}</strong></span></div>
+    <div class="stat-card stat-card--info"><span class="stat-card__icon">{% include "partials/icon.html" with name="money" %}</span><span class="stat-card__body"><small>{{ T.commission }}</small><strong>{{ summary.commission|money }}</strong></span></div>
+</div>
+
+<div class="dashboard-grid">
+    <section class="panel panel--chart">
+        <div class="panel-head"><div><h2>{{ T.monthly_properties }}</h2><p>Six-month trend</p></div></div>
+        <div class="bar-chart">
+            {% for item in monthly %}
+                <div class="bar-chart__item">
+                    <span class="bar-chart__value">{{ item.count }}</span>
+                    <div class="bar-chart__track"><span class="bar-chart__bar" style="height: {{ item.height }}%"></span></div>
+                    <span class="bar-chart__label">{{ item.label }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    <section class="panel">
+        <div class="panel-head"><div><h2>Activity summary</h2><p>Applications and deals</p></div></div>
+        <div class="summary-list">
+            <div><span>Applications received</span><strong>{{ summary.requests }}</strong></div>
+            <div><span>Applications approved</span><strong>{{ summary.approved_requests }}</strong></div>
+            <div><span>Deals created</span><strong>{{ summary.deals }}</strong></div>
+            <div><span>Closed-won value</span><strong>{{ summary.deal_value|money }}</strong></div>
+            <div><span>Target set</span><strong>{{ summary.targets }}</strong></div>
+        </div>
+    </section>
+</div>
+
+<section class="panel">
+    <div class="panel-head"><div><h2>Branch performance</h2><p>Period totals by branch</p></div></div>
+    <div class="table-wrap">
+        <span class="table-scroll-hint">→</span>
+        <table class="data-table">
+            <thead><tr><th>{{ T.branch }}</th><th>{{ T.properties }}</th><th>Property value</th><th>{{ T.deals }}</th><th>{{ T.commission }}</th></tr></thead>
+            <tbody>
+            {% for row in branch_rows %}
+                <tr>
+                    <td><strong>{{ row.branch.name }}</strong><small>{{ row.branch.code }}</small></td>
+                    <td>{{ row.properties }}</td>
+                    <td>{{ row.value|money }}</td>
+                    <td>{{ row.deals }}</td>
+                    <td>{{ row.commission|money }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="table-empty">No branch data.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="dashboard-grid dashboard-grid--tables">
+    <section class="panel">
+        <div class="panel-head"><div><h2>{{ T.top_fos }}</h2><p>Properties in period</p></div></div>
+        {% if top_fos %}
+            <div class="rank-list">
+                {% for fo in top_fos %}
+                    <div class="rank-row">
+                        <span class="rank-number">{{ forloop.counter }}</span>
+                        <span class="avatar avatar--sm">{{ fo.display_name|initials }}</span>
+                        <div class="rank-row__text"><strong>{{ fo.display_name }}</strong><small>{{ fo.branch.name|default:"No branch" }}</small></div>
+                        <strong>{{ fo.period_properties }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            {% include "partials/empty.html" with title="No rankings" text="No FO data in this period." %}
+        {% endif %}
+    </section>
+    <section class="panel">
+        <div class="panel-head"><div><h2>{{ T.recent_deals }}</h2><p>Latest in period</p></div></div>
+        {% if recent_deals %}
+            <div class="mini-list">
+                {% for deal in recent_deals %}
+                    <a href="{{ deal.get_absolute_url }}" class="mini-row">
+                        <span><strong>{{ deal.client.name }}</strong><small>{{ deal.property.title }}</small></span>
+                        <span class="badge badge--{{ deal.status|status_tone }}">{{ deal.get_status_display }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            {% include "partials/empty.html" with title="No deals" text="No deals in this period." %}
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

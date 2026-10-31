@@ -1,0 +1,14 @@
+{% extends "base_public.html" %}
+{% load core_tags %}
+{% block title %}{{ T.page_not_found }}{% endblock %}
+{% block content %}
+<section class="state-page">
+    <div class="state-card">
+        <span class="state-icon">{% include "partials/icon.html" with name="search" %}</span>
+        <span class="eyebrow">404</span>
+        <h1>{{ T.page_not_found }}</h1>
+        <p>The page you are looking for does not exist or has moved.</p>
+        <a href="{% if user.is_authenticated %}{% url 'core:dashboard' %}{% else %}{% url 'core:home' %}{% endif %}" class="btn btn--primary">{% if user.is_authenticated %}{{ T.back_home }}{% else %}Back to home{% endif %}</a>
+    </div>
+</section>
+{% endblock %}

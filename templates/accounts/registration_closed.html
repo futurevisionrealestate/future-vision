@@ -1,0 +1,13 @@
+{% extends "base_auth.html" %}
+{% load core_tags %}
+{% block title %}{{ T.registration_closed }}{% endblock %}
+{% block content %}
+<div class="auth-state">
+    <span class="auth-state__icon">{% include "partials/icon.html" with name="lock" %}</span>
+    <span class="eyebrow">{{ T.registration }}</span>
+    <h2>{{ T.registration_closed }}</h2>
+    <p>{{ T.registration_closed_help }}</p>
+    {% if site.phone %}<p class="state-contact ltr-inline">{{ site.phone }}</p>{% endif %}
+    <a href="{% url 'accounts:login' %}" class="btn btn--primary btn--full">{{ T.back_to_login }}</a>
+</div>
+{% endblock %}

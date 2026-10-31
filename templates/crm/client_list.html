@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.clients }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.management }}</span>
+        <h1>{{ T.clients }}</h1>
+        <p>Buyers, sellers, tenants, and landlords in your scope.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'crm:client_export' %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="download" %} {{ T.export_csv }}</a>
+        <a href="{% url 'crm:client_create' %}" class="btn btn--primary btn--sm">{% include "partials/icon.html" with name="plus" %} {{ T.add_client }}</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field filter-field--wide">
+        <label for="{{ filters.q.id_for_label }}">{{ T.search }}</label>
+        {{ filters.q }}
+    </div>
+    <div class="filter-field">{{ filters.client_type }}</div>
+    <div class="filter-field">{{ filters.status }}</div>
+    <div class="filter-field">{{ filters.branch }}</div>
+    <button type="submit" class="btn btn--dark btn--sm">{{ T.filter }}</button>
+    <a href="{% url 'crm:client_list' %}" class="btn btn--ghost btn--sm">{{ T.cancel }}</a>
+</form>
+
+<div class="panel panel--flush">
+    {% if page_obj.object_list %}
+        <div class="table-wrap">
+            <span class="table-scroll-hint">→</span>
+            <table class="data-table">
+                <thead><tr><th>{{ T.client_code }}</th><th>{{ T.name }}</th><th>{{ T.client_type }}</th><th>{{ T.budget }}</th><th>{{ T.status }}</th><th>{{ T.assigned_to }}</th><th>{{ T.created_at }}</th><th></th></tr></thead>
+                <tbody>
+                {% for client in page_obj %}
+                    <tr>
+                        <td><strong>{{ client.client_code }}</strong></td>
+                        <td>
+                            <span class="table-main">{{ client.name }}</span>
+                            <small><bdi dir="ltr">{{ client.phone }}</bdi>{% if client.city %} · {{ client.city }}{% endif %}</small>
+                        </td>
+                        <td><span class="badge badge--muted">{{ client.get_client_type_display }}</span></td>
+                        <td>{{ client.budget_display }}</td>
+                        <td><span class="badge badge--{{ client.status|status_tone }}">{{ client.get_status_display }}</span></td>
+                        <td>{{ client.assigned_to.display_name|default:"Unassigned" }}</td>
+                        <td>{{ client.created_at|date:"d M Y" }}</td>
+                        <td class="table-action"><a href="{{ client.get_absolute_url }}" class="icon-button icon-button--soft">{% include "partials/icon.html" with name="eye" %}</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-foot panel-foot--pagination">
+            <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+            {% include "partials/pagination.html" %}
+        </div>
+    {% else %}
+        {% include "partials/empty.html" with title="No clients found" text="Add a client or change your filters." %}
+    {% endif %}
+</div>
+{% endblock %}

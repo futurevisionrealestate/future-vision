@@ -1,0 +1,6 @@
+{% load core_tags %}
+<div class="empty-state">
+    <span class="empty-state__icon">{% include "partials/icon.html" with name="file" %}</span>
+    <strong>{{ title|default:T.no_records }}</strong>
+    {% if text %}<p>{{ text }}</p>{% endif %}
+</div>

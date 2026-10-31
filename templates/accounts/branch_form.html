@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <a href="{% url 'accounts:branch_list' %}" class="back-link">← {{ T.branches }}</a>
+        <span class="eyebrow">{{ T.admin }}</span>
+        <h1>{{ title }}</h1>
+        <p>Branch details are used to scope records and reports.</p>
+    </div>
+</div>
+<form method="post" class="form-shell form-shell--narrow">
+    {% csrf_token %}
+    <div class="form-card form-card--wide">
+        {% include "partials/form.html" with form=form %}
+        <div class="form-actions">
+            <a href="{% url 'accounts:branch_list' %}" class="btn btn--ghost">{{ T.cancel }}</a>
+            <button type="submit" class="btn btn--primary">{{ T.save_changes }}</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

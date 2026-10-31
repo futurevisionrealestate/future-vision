@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.audit_logs }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.admin }}</span>
+        <h1>{{ T.audit_logs }}</h1>
+        <p>{{ T.audit_help }}</p>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field filter-field--wide">
+        <label for="audit-q">{{ T.search }}</label>
+        <input type="search" name="q" id="audit-q" value="{{ q }}" class="form-input" placeholder="Description, actor, or record">
+    </div>
+    <div class="filter-field">
+        <select name="action" class="form-select">
+            <option value="">All actions</option>
+            {% for item in actions %}
+                <option value="{{ item }}" {% if action == item %}selected{% endif %}>{{ item }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn--dark btn--sm">{{ T.filter }}</button>
+    <a href="{% url 'core:audit_logs' %}" class="btn btn--ghost btn--sm">{{ T.cancel }}</a>
+</form>
+
+<div class="panel panel--flush">
+    {% if page_obj.object_list %}
+        <div class="table-wrap">
+            <span class="table-scroll-hint">→</span>
+            <table class="data-table">
+                <thead><tr><th>Action</th><th>Actor</th><th>Record</th><th>Description</th><th>IP</th><th>Time</th></tr></thead>
+                <tbody>
+                {% for log in page_obj %}
+                    <tr>
+                        <td><code class="code-badge">{{ log.action }}</code></td>
+                        <td>
+                            {% if log.actor %}
+                                <div class="table-user"><span class="avatar avatar--xs">{{ log.actor.display_name|initials }}</span><span class="table-main">{{ log.actor.display_name }}</span></div>
+                            {% else %}System{% endif %}
+                        </td>
+                        <td>{% if log.object_repr %}{{ log.object_repr }}{% else %}—{% endif %}<small>{{ log.model_name }}</small></td>
+                        <td>{{ log.description|default:"—" }}</td>
+                        <td><code>{{ log.ip_address|default:"—" }}</code></td>
+                        <td>{{ log.created_at|date:"d M Y, H:i" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-foot panel-foot--pagination">
+            <span>{{ page_obj.paginator.count }} entries</span>
+            {% include "partials/pagination.html" %}
+        </div>
+    {% else %}
+        {% include "partials/empty.html" with title="No audit entries" text="System actions will be recorded here." %}
+    {% endif %}
+</div>
+{% endblock %}

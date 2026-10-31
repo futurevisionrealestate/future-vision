@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.profile }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.account }}</span>
+        <h1>{{ T.profile }}</h1>
+        <p>Keep your contact and professional details up to date.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'accounts:change_password' %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="lock" %} {{ T.change_password }}</a>
+    </div>
+</div>
+
+<div class="detail-layout">
+    <div class="detail-main">
+        <form method="post" class="form-card form-card--wide">
+            {% csrf_token %}
+            {% if common_form.non_field_errors %}
+                <div class="form-errors">{% for error in common_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>
+            {% endif %}
+            <fieldset class="form-section">
+                <legend><span>01</span> Personal details</legend>
+                <div class="form-grid form-grid--two">
+                    {% for field in common_form %}{% include "partials/field.html" with field=field %}{% endfor %}
+                </div>
+            </fieldset>
+            {% if profile_form %}
+                <fieldset class="form-section">
+                    <legend><span>02</span> {% if user.is_fo %}FO profile{% else %}Dealer profile{% endif %}</legend>
+                    {% if profile_form.non_field_errors %}
+                        <div class="form-errors">{% for error in profile_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>
+                    {% endif %}
+                    <div class="form-grid form-grid--two">
+                        {% for field in profile_form %}{% include "partials/field.html" with field=field %}{% endfor %}
+                    </div>
+                </fieldset>
+            {% endif %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn--primary">{{ T.save_changes }}</button>
+            </div>
+        </form>
+    </div>
+
+    <aside class="detail-side">
+        <section class="panel">
+            <div class="contact-card">
+                <span class="avatar avatar--xl">{{ user.display_name|initials }}</span>
+                <strong>{{ user.display_name }}</strong>
+                <span class="badge badge--{{ user.role|role_tone }}">{{ user.role_label }}</span>
+                {% if user.fv_id %}<span class="fv-id">{{ user.fv_id }}</span>{% endif %}
+                <p class="muted">{{ user.email }}</p>
+            </div>
+            <div class="meta-list">
+                <div><span>{{ T.username }}</span><strong>{{ user.username }}</strong></div>
+                <div><span>{{ T.branch }}</span><strong>{{ user.branch|default:"—" }}</strong></div>
+                <div><span>{{ T.phone }}</span><strong><bdi dir="ltr">{{ user.phone|default:"-" }}</bdi></strong></div>
+                <div><span>Joined</span><strong>{{ user.date_joined|date:"d M Y" }}</strong></div>
+                <div><span>Last login</span><strong>{{ user.last_login|date:"d M Y, H:i"|default:"—" }}</strong></div>
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}

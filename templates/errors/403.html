@@ -1,0 +1,14 @@
+{% extends "base_public.html" %}
+{% load core_tags %}
+{% block title %}{{ T.no_access }}{% endblock %}
+{% block content %}
+<section class="state-page">
+    <div class="state-card">
+        <span class="state-icon state-icon--danger">{% include "partials/icon.html" with name="lock" %}</span>
+        <span class="eyebrow">403</span>
+        <h1>{{ T.no_access }}</h1>
+        <p>{{ T.permission_denied }}</p>
+        <a href="{% if user.is_authenticated %}{% url 'core:dashboard' %}{% else %}{% url 'accounts:login' %}{% endif %}" class="btn btn--primary">{% if user.is_authenticated %}{{ T.back_home }}{% else %}{{ T.login }}{% endif %}</a>
+    </div>
+</section>
+{% endblock %}

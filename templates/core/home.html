@@ -1,0 +1,103 @@
+{% extends "base_public.html" %}
+{% load static core_tags %}
+{% block title %}{{ T.hero_title }}{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero__content">
+        <span class="eyebrow"><span class="eyebrow-dot"></span> {{ site.tagline }}</span>
+        <h1>{{ T.hero_title }}</h1>
+        <p>{{ T.hero_subtitle }}</p>
+        <div class="hero__actions">
+            <a href="{% url 'accounts:register' %}" class="btn btn--primary">{{ T.apply_now }}</a>
+            <a href="{% url 'registrations:status_check' %}" class="btn btn--ghost">{{ T.check_status }}</a>
+        </div>
+        <div class="hero__trust">
+            <span>{% include "partials/icon.html" with name="shield" %} Admin-approved network</span>
+            <span>{% include "partials/icon.html" with name="lock" %} Secure accounts</span>
+            <span>{% include "partials/icon.html" with name="chart" %} Live reporting</span>
+        </div>
+    </div>
+    <div class="hero__panel">
+        <div class="hero-card">
+            <div class="hero-card__top">
+                <img src="{% static 'img/logo.jpeg' %}" alt="" class="hero-logo">
+                <span class="badge badge--success">Network overview</span>
+            </div>
+            <div class="hero-card__stats">
+                <div><strong>FO</strong><span>Field officers</span></div>
+                <div><strong>FV</strong><span>Dealers</span></div>
+                <div><strong>24/7</strong><span>Records</span></div>
+            </div>
+            <div class="hero-card__line">
+                <span style="width: 78%"></span>
+            </div>
+            <p class="hero-card__caption">One connected record for every application, property, client, and deal.</p>
+        </div>
+        <div class="floating-note floating-note--one">
+            {% include "partials/icon.html" with name="check" %} Application approved
+        </div>
+        <div class="floating-note floating-note--two">
+            {% include "partials/icon.html" with name="building" %} Property registered
+        </div>
+    </div>
+</section>
+
+<section class="section" id="features">
+    <div class="section-heading">
+        <span class="eyebrow">Platform</span>
+        <h2>{{ T.features }}</h2>
+        <p>Built for a growing real estate network with clear responsibility and auditable records.</p>
+    </div>
+    <div class="feature-grid">
+        <article class="feature-card">
+            <span class="feature-icon feature-icon--gold">{% include "partials/icon.html" with name="shield" %}</span>
+            <h3>{{ T.feature_1_title }}</h3>
+            <p>{{ T.feature_1_text }}</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon feature-icon--navy">{% include "partials/icon.html" with name="building" %}</span>
+            <h3>{{ T.feature_2_title }}</h3>
+            <p>{{ T.feature_2_text }}</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon feature-icon--green">{% include "partials/icon.html" with name="chart" %}</span>
+            <h3>{{ T.feature_3_title }}</h3>
+            <p>{{ T.feature_3_text }}</p>
+        </article>
+    </div>
+</section>
+
+<section class="section section--soft">
+    <div class="step-grid">
+        <div class="step-card">
+            <span class="step-number">01</span>
+            <h3>Apply</h3>
+            <p>Submit your FO or dealer application with your details and branch.</p>
+        </div>
+        <div class="step-card">
+            <span class="step-number">02</span>
+            <h3>Review</h3>
+            <p>Head Office reviews the application and records its recommendation.</p>
+        </div>
+        <div class="step-card">
+            <span class="step-number">03</span>
+            <h3>Get approved</h3>
+            <p>An authorized approver issues your unique Future Vision ID.</p>
+        </div>
+        <div class="step-card">
+            <span class="step-number">04</span>
+            <h3>Start working</h3>
+            <p>Log in, register properties, manage clients, and track your targets.</p>
+        </div>
+    </div>
+</section>
+
+<section class="cta-band">
+    <div>
+        <span class="eyebrow eyebrow--light">Future Vision network</span>
+        <h2>Ready to build your record with us?</h2>
+        <p>Applications are reviewed by Head Office. Approved members receive a unique FV ID.</p>
+    </div>
+    <a href="{% url 'accounts:register' %}" class="btn btn--gold">{{ T.apply_now }}</a>
+</section>
+{% endblock %}

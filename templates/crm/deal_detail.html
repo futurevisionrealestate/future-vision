@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ deal.deal_code }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <a href="{% url 'crm:deal_list' %}" class="back-link">← {{ T.deals }}</a>
+        <span class="eyebrow">{{ deal.deal_code }}</span>
+        <h1>{{ deal.property.title }}</h1>
+        <p>{{ deal.client.name }} · {{ deal.get_deal_type_display }} · {{ deal.deal_date|date:"d M Y" }}</p>
+    </div>
+    <div class="page-actions">
+        <span class="badge badge--{{ deal.status|status_tone }} badge--lg">{{ deal.get_status_display }}</span>
+        {% if can_edit %}<a href="{% url 'crm:deal_edit' deal.pk %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="edit" %} {{ T.edit }}</a>{% endif %}
+    </div>
+</div>
+
+<div class="detail-layout">
+    <div class="detail-main">
+        <section class="panel">
+            <div class="panel-head"><div><h2>Deal summary</h2><p>Financial and workflow details</p></div></div>
+            <div class="detail-grid detail-grid--three">
+                <div class="detail-item"><span>{{ T.amount }}</span><strong>{{ deal.amount|money }}</strong></div>
+                <div class="detail-item"><span>{{ T.commission }}</span><strong>{{ deal.commission|money }}</strong></div>
+                <div class="detail-item"><span>{{ T.deal_type }}</span><strong>{{ deal.get_deal_type_display }}</strong></div>
+                <div class="detail-item"><span>{{ T.status }}</span><strong>{{ deal.get_status_display }}</strong></div>
+                <div class="detail-item"><span>{{ T.deal_date }}</span><strong>{{ deal.deal_date|date:"d M Y" }}</strong></div>
+                <div class="detail-item"><span>{{ T.assigned_to }}</span><strong>{{ deal.assigned_to.display_name|default:"Unassigned" }}</strong></div>
+            </div>
+            {% if deal.notes %}<div class="detail-block"><span>{{ T.notes }}</span><p class="prose">{{ deal.notes|linebreaksbr }}</p></div>{% endif %}
+        </section>
+
+        <div class="split-panels">
+            <section class="panel">
+                <div class="panel-head"><div><h2>{{ T.property }}</h2></div><a href="{{ deal.property.get_absolute_url }}" class="text-link">{{ T.view }} →</a></div>
+                <a href="{{ deal.property.get_absolute_url }}" class="mini-record">
+                    <span class="table-thumb table-thumb--empty">{% include "partials/icon.html" with name="building" %}</span>
+                    <span><strong>{{ deal.property.title }}</strong><small>{{ deal.property.property_code }} · {{ deal.property.price_display }}</small></span>
+                </a>
+            </section>
+            <section class="panel">
+                <div class="panel-head"><div><h2>{{ T.clients }}</h2></div><a href="{{ deal.client.get_absolute_url }}" class="text-link">{{ T.view }} →</a></div>
+                <a href="{{ deal.client.get_absolute_url }}" class="mini-record">
+                    <span class="avatar avatar--sm">{{ deal.client.name|initials }}</span>
+                    <span><strong>{{ deal.client.name }}</strong><small><bdi dir="ltr">{{ deal.client.phone }}</bdi> · {{ deal.client.get_client_type_display }}</small></span>
+                </a>
+            </section>
+        </div>
+    </div>
+
+    <aside class="detail-side">
+        <section class="panel">
+            <div class="panel-head"><div><h2>Record info</h2></div></div>
+            <div class="meta-list">
+                <div><span>{{ T.branch }}</span><strong>{{ deal.branch|default:"—" }}</strong></div>
+                <div><span>{{ T.created_at }}</span><strong>{{ deal.created_at|date:"d M Y, H:i" }}</strong></div>
+                <div><span>Created by</span><strong>{{ deal.created_by.display_name }}</strong></div>
+                {% if deal.closed_at %}<div><span>Closed</span><strong>{{ deal.closed_at|date:"d M Y, H:i" }}</strong></div>{% endif %}
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <a href="{% if deal %}{{ deal.get_absolute_url }}{% else %}{% url 'crm:deal_list' %}{% endif %}" class="back-link">← {{ T.deals }}</a>
+        <span class="eyebrow">Deal record</span>
+        <h1>{{ title }}</h1>
+        <p>Closing a won deal updates the property and client status automatically.</p>
+    </div>
+</div>
+<form method="post" class="form-shell form-shell--narrow">
+    {% csrf_token %}
+    <div class="form-card form-card--wide">
+        {% include "partials/form.html" with form=form %}
+        <div class="form-actions">
+            <a href="{% if deal %}{{ deal.get_absolute_url }}{% else %}{% url 'crm:deal_list' %}{% endif %}" class="btn btn--ghost">{{ T.cancel }}</a>
+            <button type="submit" class="btn btn--primary">{{ T.save_changes }}</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

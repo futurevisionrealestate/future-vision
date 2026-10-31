@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ property.property_code }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <a href="{% url 'operations:list' %}" class="back-link">← {{ T.properties }}</a>
+        <span class="eyebrow">{{ property.property_code }}</span>
+        <h1>{{ property.title }}</h1>
+        <p>{{ property.city }}{% if property.area %}, {{ property.area }}{% endif %} · {{ property.get_property_type_display }} · {{ property.get_purpose_display }}</p>
+    </div>
+    <div class="page-actions">
+        <span class="badge badge--{{ property.status|status_tone }} badge--lg">{{ property.get_status_display }}</span>
+        {% if can_edit %}
+            <a href="{% url 'operations:edit' property.pk %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="edit" %} {{ T.edit }}</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if property.rejection_reason %}
+    <div class="notice notice--danger"><strong>{{ T.rejection_reason }}</strong><p>{{ property.rejection_reason }}</p></div>
+{% endif %}
+
+<div class="detail-layout">
+    <div class="detail-main">
+        <section class="panel">
+            <div class="gallery">
+                {% if images %}
+                    <div class="gallery__main">
+                        <img src="{{ images.first.image.url }}" alt="{{ images.first.caption|default:property.title }}" data-gallery-main>
+                    </div>
+                    {% if images|length > 1 %}
+                        <div class="gallery__thumbs">
+                            {% for image in images %}
+                                <button type="button" class="gallery__thumb" data-gallery-thumb data-src="{{ image.image.url }}">
+                                    <img src="{{ image.image.url }}" alt="{{ image.caption|default:property.title }}">
+                                </button>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="gallery__empty">{% include "partials/icon.html" with name="building" %}<span>No photos uploaded yet</span></div>
+                {% endif %}
+            </div>
+            <div class="detail-grid detail-grid--three">
+                <div class="detail-item"><span>{{ T.price }}</span><strong>{{ property.price_display }}</strong></div>
+                <div class="detail-item"><span>{{ T.size }}</span><strong>{{ property.size_display }}</strong></div>
+                <div class="detail-item"><span>{{ T.property_type }}</span><strong>{{ property.get_property_type_display }}</strong></div>
+                <div class="detail-item"><span>{{ T.purpose }}</span><strong>{{ property.get_purpose_display }}</strong></div>
+                <div class="detail-item"><span>{{ T.bedrooms }}</span><strong>{{ property.bedrooms }}</strong></div>
+                <div class="detail-item"><span>{{ T.bathrooms }}</span><strong>{{ property.bathrooms }}</strong></div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-head"><div><h2>Description</h2><p>Property details and features</p></div></div>
+            {% if property.description %}<p class="prose">{{ property.description|linebreaksbr }}</p>{% else %}<p class="muted">No description provided.</p>{% endif %}
+            {% if property.features %}
+                <div class="chip-list">
+                    {% for feature in property.features.splitlines %}
+                        {% if feature %}<span class="chip">{{ feature }}</span>{% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <div class="panel-head">
+                <div><h2>{{ T.deals }}</h2><p>Deals linked to this property</p></div>
+                <a href="{% url 'crm:deal_create' %}" class="text-link">{{ T.add_deal }} →</a>
+            </div>
+            {% if deals %}
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead><tr><th>{{ T.deal_code }}</th><th>{{ T.clients }}</th><th>{{ T.deal_type }}</th><th>{{ T.amount }}</th><th>{{ T.status }}</th><th></th></tr></thead>
+                        <tbody>
+                        {% for deal in deals %}
+                            <tr>
+                                <td><strong>{{ deal.deal_code }}</strong></td>
+                                <td>{{ deal.client.name }}</td>
+                                <td>{{ deal.get_deal_type_display }}</td>
+                                <td>{{ deal.amount|money }}</td>
+                                <td><span class="badge badge--{{ deal.status|status_tone }}">{{ deal.get_status_display }}</span></td>
+                                <td class="table-action"><a href="{{ deal.get_absolute_url }}" class="icon-button icon-button--soft">{% include "partials/icon.html" with name="eye" %}</a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                {% include "partials/empty.html" with title="No deals yet" text="Deals linked to this property will appear here." %}
+            {% endif %}
+        </section>
+    </div>
+
+    <aside class="detail-side">
+        <section class="panel">
+            <div class="panel-head"><div><h2>Contact</h2><p>Owner / representative</p></div></div>
+            <div class="contact-card">
+                <span class="avatar avatar--lg">{{ property.contact_name|initials }}</span>
+                <strong>{{ property.contact_name }}</strong>
+                <a href="tel:{{ property.contact_phone }}" class="contact-phone ltr-inline">{{ property.contact_phone }}</a>
+                {% if property.owner_name %}<p class="muted">Owner: {{ property.owner_name }}</p>{% endif %}
+                <a href="tel:{{ property.contact_phone }}" class="btn btn--primary btn--full btn--sm">{% include "partials/icon.html" with name="phone" %} Call contact</a>
+            </div>
+            <div class="meta-list">
+                <div><span>{{ T.branch }}</span><strong>{{ property.branch|default:"—" }}</strong></div>
+                <div><span>{{ T.created_at }}</span><strong>{{ property.created_at|date:"d M Y, H:i" }}</strong></div>
+                <div><span>Created by</span><strong>{{ property.created_by.display_name }}</strong></div>
+                {% if property.approved_by %}
+                    <div><span>{{ T.approved_by }}</span><strong>{{ property.approved_by.display_name }}</strong></div>
+                    <div><span>{{ T.approved }}</span><strong>{{ property.approved_at|date:"d M Y, H:i" }}</strong></div>
+                {% endif %}
+            </div>
+        </section>
+
+        {% if can_moderate and property.status == "PENDING" or can_moderate and property.status == "REJECTED" %}
+            <section class="panel panel--moderation">
+                <div class="panel-head"><div><h2>Moderation</h2><p>Review this property record</p></div></div>
+                <form method="post" action="{% url 'operations:approve' property.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn--success btn--full">{% include "partials/icon.html" with name="check" %} {{ T.approve }}</button>
+                </form>
+                <details class="reject-details">
+                    <summary>{{ T.reject }}</summary>
+                    <form method="post" action="{% url 'operations:reject' property.pk %}">
+                        {% csrf_token %}
+                        {% include "partials/field.html" with field=reject_form.reason %}
+                        <button type="submit" class="btn btn--danger btn--full">{{ T.reject }}</button>
+                    </form>
+                </details>
+            </section>
+        {% endif %}
+    </aside>
+</div>
+{% endblock %}

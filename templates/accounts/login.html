@@ -1,0 +1,58 @@
+{% extends "base_auth.html" %}
+{% load core_tags %}
+{% block title %}{{ T.login }}{% endblock %}
+{% block content %}
+<div class="auth-panel__head">
+    <span class="eyebrow">{{ T.security }}</span>
+    <h2>{{ T.auth_sign_in_title }}</h2>
+    <p>{{ T.sign_in_help }}</p>
+</div>
+
+<form method="post" class="auth-form" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+
+    {% if form.non_field_errors %}
+        <div class="form-errors" role="alert">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="field {% if form.username.errors %}has-error{% endif %}">
+        <label for="{{ form.username.id_for_label }}">{{ form.username.label|tr }}<em>*</em></label>
+        {{ form.username }}
+        {% for error in form.username.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <div class="field {% if form.password.errors %}has-error{% endif %}">
+        <div class="field__label-row">
+            <label for="{{ form.password.id_for_label }}">{{ form.password.label|tr }}<em>*</em></label>
+            <a href="{% url 'accounts:password_reset' %}" class="text-link">{{ T.forgot_password }}</a>
+        </div>
+        <div class="password-control">
+            {{ form.password }}
+            <button type="button" class="password-toggle" data-password-toggle="{{ form.password.id_for_label }}" aria-label="{{ T.auth_show_password }}" aria-pressed="false">
+                <span class="password-toggle__eye">{% include "partials/icon.html" with name="eye" %}</span>
+            </button>
+        </div>
+        {% for error in form.password.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    </div>
+
+    <button type="submit" class="btn btn--primary btn--full auth-submit">{{ T.login }}</button>
+</form>
+
+<div class="auth-divider"><span>{{ T.auth_new_here }}</span></div>
+
+<div class="auth-actions">
+    <a href="{% url 'accounts:register' %}" class="btn btn--ghost btn--full">{{ T.apply_now }} {% include "partials/icon.html" with name="arrow-right" %}</a>
+    <a href="{% url 'registrations:status_check' %}" class="text-link">{{ T.already_applied }}</a>
+</div>
+
+{% if site.phone or site.email %}
+    <div class="auth-help">
+        <span>{{ T.auth_need_help }}</span>
+        {% if site.phone %}<a href="tel:{{ site.phone }}">{{ site.phone }}</a>{% endif %}
+        {% if site.email %}<a href="mailto:{{ site.email }}">{{ site.email }}</a>{% endif %}
+    </div>
+{% endif %}
+{% endblock %}

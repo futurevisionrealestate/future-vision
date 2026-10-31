@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.search }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.search }}</span>
+        <h1>{% if q %}Results for “{{ q }}”{% else %}{{ T.search }}{% endif %}</h1>
+        <p>Search across properties, clients, deals, applications, and users.</p>
+    </div>
+</div>
+
+<form method="get" class="search-hero">
+    <span class="search-hero__icon">{% include "partials/icon.html" with name="search" %}</span>
+    <input type="search" name="q" value="{{ q }}" placeholder="Search by code, name, phone, CNIC, or location..." autofocus>
+    <button type="submit" class="btn btn--primary">{{ T.search }}</button>
+</form>
+
+{% if q %}
+    {% if properties %}
+        <section class="panel">
+            <div class="panel-head"><div><h2>{{ T.properties }}</h2><p>{{ properties|length }} match{{ properties|length|pluralize }}</p></div><a href="{% url 'operations:list' %}?q={{ q|urlencode }}" class="text-link">{{ T.view_all }} →</a></div>
+            <div class="mini-list">
+                {% for property in properties %}
+                    <a href="{{ property.get_absolute_url }}" class="mini-row">
+                        <span><strong>{{ property.property_code }} · {{ property.title }}</strong><small>{{ property.city }} · {{ property.price_display }}</small></span>
+                        <span class="badge badge--{{ property.status|status_tone }}">{{ property.get_status_display }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+    {% if clients %}
+        <section class="panel">
+            <div class="panel-head"><div><h2>{{ T.clients }}</h2><p>{{ clients|length }} match{{ clients|length|pluralize }}</p></div><a href="{% url 'crm:client_list' %}?q={{ q|urlencode }}" class="text-link">{{ T.view_all }} →</a></div>
+            <div class="mini-list">
+                {% for client in clients %}
+                    <a href="{{ client.get_absolute_url }}" class="mini-row">
+                        <span><strong>{{ client.client_code }} · {{ client.name }}</strong><small><bdi dir="ltr">{{ client.phone }}</bdi> · {{ client.get_client_type_display }}</small></span>
+                        <span class="badge badge--{{ client.status|status_tone }}">{{ client.get_status_display }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+    {% if deals %}
+        <section class="panel">
+            <div class="panel-head"><div><h2>{{ T.deals }}</h2><p>{{ deals|length }} match{{ deals|length|pluralize }}</p></div><a href="{% url 'crm:deal_list' %}?q={{ q|urlencode }}" class="text-link">{{ T.view_all }} →</a></div>
+            <div class="mini-list">
+                {% for deal in deals %}
+                    <a href="{{ deal.get_absolute_url }}" class="mini-row">
+                        <span><strong>{{ deal.deal_code }} · {{ deal.property.title }}</strong><small>{{ deal.client.name }} · {{ deal.amount|money }}</small></span>
+                        <span class="badge badge--{{ deal.status|status_tone }}">{{ deal.get_status_display }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+    {% if requests %}
+        <section class="panel">
+            <div class="panel-head"><div><h2>{{ T.registrations }}</h2><p>{{ requests|length }} match{{ requests|length|pluralize }}</p></div><a href="{% url 'registrations:list' %}?q={{ q|urlencode }}" class="text-link">{{ T.view_all }} →</a></div>
+            <div class="mini-list">
+                {% for item in requests %}
+                    <a href="{{ item.get_absolute_url }}" class="mini-row">
+                        <span><strong>{{ item.request_no }} · {{ item.full_name }}</strong><small><bdi dir="ltr">{{ item.phone }}</bdi> · {{ item.get_applicant_type_display }}</small></span>
+                        <span class="badge badge--{{ item.status|status_tone }}">{{ item.get_status_display }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+    {% if users %}
+        <section class="panel">
+            <div class="panel-head"><div><h2>{{ T.users }}</h2><p>{{ users|length }} match{{ users|length|pluralize }}</p></div><a href="{% url 'accounts:user_list' %}?q={{ q|urlencode }}" class="text-link">{{ T.view_all }} →</a></div>
+            <div class="mini-list">
+                {% for item in users %}
+                    <a href="{{ item.get_absolute_url }}" class="mini-row">
+                        <span><strong>{{ item.display_name }}</strong><small>{{ item.email }} · {{ item.role_label }}</small></span>
+                        <span class="badge badge--{{ item.role|role_tone }}">{{ item.role_label }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+    {% if not properties and not clients and not deals and not requests and not users %}
+        {% include "partials/empty.html" with title="No results found" text="Try a different name, code, phone number, or CNIC." %}
+    {% endif %}
+{% else %}
+    <div class="search-hint-grid">
+        <div class="search-hint"><strong>{{ T.properties }}</strong><span>FVPR code, title, city, contact</span></div>
+        <div class="search-hint"><strong>{{ T.clients }}</strong><span>FVCL code, name, phone</span></div>
+        <div class="search-hint"><strong>{{ T.registrations }}</strong><span>Request no, name, CNIC</span></div>
+        <div class="search-hint"><strong>{{ T.users }}</strong><span>Name, username, FV ID</span></div>
+    </div>
+{% endif %}
+{% endblock %}

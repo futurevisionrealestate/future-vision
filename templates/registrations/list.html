@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.registrations }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.management }}</span>
+        <h1>{{ T.registrations }}</h1>
+        <p>Review FO and dealer applications before they join the network.</p>
+    </div>
+    <div class="page-actions">
+        {% if user.is_executive or user.is_head_office or user.is_branch_manager %}
+            <a href="{% url 'registrations:export' %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="download" %} {{ T.export_csv }}</a>
+        {% endif %}
+        <a href="{% url 'accounts:register' %}" class="btn btn--primary btn--sm">{% include "partials/icon.html" with name="plus" %} New application</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field filter-field--wide">
+        <label for="{{ filters.q.id_for_label }}">{{ T.search }}</label>
+        {{ filters.q }}
+    </div>
+    <div class="filter-field">{{ filters.status }}</div>
+    <div class="filter-field">{{ filters.applicant_type }}</div>
+    <div class="filter-field">{{ filters.branch }}</div>
+    <button type="submit" class="btn btn--dark btn--sm">{{ T.filter }}</button>
+    <a href="{% url 'registrations:list' %}" class="btn btn--ghost btn--sm">{{ T.cancel }}</a>
+</form>
+
+<div class="panel panel--flush">
+    {% if page_obj.object_list %}
+        <div class="table-wrap">
+            <span class="table-scroll-hint">→</span>
+            <table class="data-table">
+                <thead><tr><th>{{ T.request_no }}</th><th>{{ T.name }}</th><th>{{ T.applicant_type }}</th><th>{{ T.branch }}</th><th>{{ T.status }}</th><th>{{ T.submitted }}</th><th></th></tr></thead>
+                <tbody>
+                {% for registration in page_obj %}
+                    <tr>
+                        <td><strong>{{ registration.request_no }}</strong></td>
+                        <td>
+                            <div class="table-user">
+                                <span class="avatar avatar--xs">{{ registration.full_name|initials }}</span>
+                                <div><span class="table-main">{{ registration.full_name }}</span><small><bdi dir="ltr">{{ registration.phone }}</bdi></small></div>
+                            </div>
+                        </td>
+                        <td>{{ registration.get_applicant_type_display }}</td>
+                        <td>{{ registration.branch|default:"—" }}</td>
+                        <td><span class="badge badge--{{ registration.status|status_tone }}">{{ registration.get_status_display }}</span></td>
+                        <td>{{ registration.created_at|date:"d M Y, H:i" }}</td>
+                        <td class="table-action"><a href="{{ registration.get_absolute_url }}" class="icon-button icon-button--soft" title="{{ T.view }}">{% include "partials/icon.html" with name="eye" %}</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-foot panel-foot--pagination">
+            <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+            {% include "partials/pagination.html" %}
+        </div>
+    {% else %}
+        {% include "partials/empty.html" with title="No applications found" text="New FO and dealer applications will appear here." %}
+    {% endif %}
+</div>
+{% endblock %}

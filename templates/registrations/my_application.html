@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.application_status }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">Your account</span>
+        <h1>{{ T.application_status }}</h1>
+        <p>Track your Future Vision application from submission to approval.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'registrations:status_check' %}" class="btn btn--ghost btn--sm">{{ T.check_status }}</a>
+    </div>
+</div>
+
+<div class="status-overview">
+    <section class="panel status-overview__main">
+        <div class="status-overview__head">
+            <div>
+                <span class="eyebrow">{{ registration.request_no }}</span>
+                <h2>{{ registration.full_name }}</h2>
+                <p>{{ registration.get_applicant_type_display }} · {{ registration.email }}</p>
+            </div>
+            <span class="badge badge--{{ registration.status|status_tone }} badge--lg">{{ registration.get_status_display }}</span>
+        </div>
+        {% if registration.fv_id_issued %}
+            <div class="id-card">
+                <span>Future Vision ID</span>
+                <strong>{{ registration.fv_id_issued }}</strong>
+                <small>This is your permanent network identity.</small>
+            </div>
+        {% endif %}
+        {% if registration.rejection_reason %}
+            <div class="notice notice--danger"><strong>{{ T.rejection_reason }}</strong><p>{{ registration.rejection_reason }}</p></div>
+        {% endif %}
+        <div class="detail-grid detail-grid--three">
+            <div class="detail-item"><span>{{ T.submitted }}</span><strong>{{ registration.created_at|date:"d M Y" }}</strong></div>
+            <div class="detail-item"><span>{{ T.branch }}</span><strong>{{ registration.branch|default:"—" }}</strong></div>
+            <div class="detail-item"><span>{{ T.phone }}</span><strong><bdi dir="ltr">{{ registration.phone }}</bdi></strong></div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><div><h2>Review progress</h2><p>Latest updates</p></div></div>
+        <div class="timeline">
+            <div class="timeline-item">
+                <span class="timeline-dot timeline-dot--approve"></span>
+                <div><strong>Application submitted</strong><p>{{ registration.created_at|date:"d M Y, H:i" }}</p></div>
+            </div>
+            {% if registration.reviewed_at %}
+                <div class="timeline-item">
+                    <span class="timeline-dot timeline-dot--review"></span>
+                    <div><strong>Under review</strong><p>{{ registration.reviewed_at|date:"d M Y, H:i" }}</p></div>
+                </div>
+            {% endif %}
+            {% if registration.approved_at %}
+                <div class="timeline-item">
+                    <span class="timeline-dot timeline-dot--approve"></span>
+                    <div><strong>Approved</strong><p>{{ registration.approved_at|date:"d M Y, H:i" }}</p></div>
+                </div>
+            {% elif registration.rejected_at %}
+                <div class="timeline-item">
+                    <span class="timeline-dot timeline-dot--reject"></span>
+                    <div><strong>Rejected</strong><p>{{ registration.rejected_at|date:"d M Y, H:i" }}</p></div>
+                </div>
+            {% else %}
+                <div class="timeline-item">
+                    <span class="timeline-dot"></span>
+                    <div><strong>Waiting for review</strong><p>Head Office will review your application.</p></div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

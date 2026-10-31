@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.settings }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.admin }}</span>
+        <h1>{{ T.settings }}</h1>
+        <p>Company details, registration policy, and system defaults.</p>
+    </div>
+</div>
+
+<form method="post" class="form-shell form-shell--narrow">
+    {% csrf_token %}
+    <div class="form-card form-card--wide">
+        <fieldset class="form-section">
+            <legend><span>01</span> {{ T.company_details }}</legend>
+            <div class="form-grid form-grid--two">
+                {% include "partials/field.html" with field=form.company_name %}
+                {% include "partials/field.html" with field=form.tagline %}
+                {% include "partials/field.html" with field=form.phone %}
+                {% include "partials/field.html" with field=form.email %}
+                {% include "partials/field.html" with field=form.address %}
+                {% include "partials/field.html" with field=form.city %}
+            </div>
+        </fieldset>
+        <fieldset class="form-section">
+            <legend><span>02</span> {{ T.approval_policy }}</legend>
+            <div class="form-grid form-grid--two">
+                {% include "partials/field.html" with field=form.approval_mode %}
+                {% include "partials/field.html" with field=form.default_daily_target %}
+                {% include "partials/field.html" with field=form.public_registration_enabled %}
+                {% include "partials/field.html" with field=form.require_review %}
+            </div>
+            <div class="notice">
+                <strong>How approval works</strong>
+                <p>When review is required, an application must be moved to “Under Review” before final approval. The approval mode decides whether any authorized approver or only the CEO/Admin can issue the final ID.</p>
+            </div>
+        </fieldset>
+        <fieldset class="form-section">
+            <legend><span>03</span> {{ T.system }}</legend>
+            <div class="form-grid form-grid--two">
+                {% include "partials/field.html" with field=form.maintenance_message %}
+                {% include "partials/field.html" with field=form.support_hours %}
+                {% include "partials/field.html" with field=form.facebook_url %}
+                {% include "partials/field.html" with field=form.instagram_url %}
+            </div>
+        </fieldset>
+        <div class="form-actions">
+            <a href="{% url 'core:dashboard' %}" class="btn btn--ghost">{{ T.cancel }}</a>
+            <button type="submit" class="btn btn--primary">{{ T.save_changes }}</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

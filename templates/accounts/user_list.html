@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.users }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.admin }}</span>
+        <h1>{{ T.users }}</h1>
+        <p>Approved accounts, roles, branches, and permissions.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'accounts:user_export' %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="download" %} {{ T.export_csv }}</a>
+        {% if user.can_manage_users %}
+            <a href="{% url 'accounts:user_create' %}" class="btn btn--primary btn--sm">{% include "partials/icon.html" with name="plus" %} {{ T.add_user }}</a>
+        {% endif %}
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field filter-field--wide">
+        <label for="user-q">{{ T.search }}</label>
+        <input type="search" name="q" id="user-q" value="{{ q }}" class="form-input" placeholder="Name, username, email, phone, FV ID">
+    </div>
+    <div class="filter-field">
+        <select name="role" class="form-select">
+            <option value="">All roles</option>
+            {% for value, label in roles %}
+                <option value="{{ value }}" {% if role == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <select name="branch" class="form-select">
+            <option value="">All branches</option>
+            {% for branch in branches %}
+                <option value="{{ branch.pk }}" {% if branch_id == branch.pk|stringformat:"s" %}selected{% endif %}>{{ branch.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filter-field">
+        <select name="status" class="form-select">
+            <option value="">All statuses</option>
+            <option value="active" {% if status == "active" %}selected{% endif %}>{{ T.active }}</option>
+            <option value="inactive" {% if status == "inactive" %}selected{% endif %}>{{ T.inactive }}</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn--dark btn--sm">{{ T.filter }}</button>
+    <a href="{% url 'accounts:user_list' %}" class="btn btn--ghost btn--sm">{{ T.cancel }}</a>
+</form>
+
+<div class="panel panel--flush">
+    {% if page_obj.object_list %}
+        <div class="table-wrap">
+            <span class="table-scroll-hint">→</span>
+            <table class="data-table">
+                <thead><tr><th>User</th><th>{{ T.role }}</th><th>{{ T.branch }}</th><th>FV ID</th><th>{{ T.status }}</th><th>{{ T.created_at }}</th><th></th></tr></thead>
+                <tbody>
+                {% for item in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="table-user">
+                                <span class="avatar avatar--xs">{{ item.display_name|initials }}</span>
+                                <div><span class="table-main">{{ item.display_name }}</span><small>{{ item.email }}</small></div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge--{{ item.role|role_tone }}">{{ item.role_label }}</span></td>
+                        <td>{{ item.branch|default:"—" }}</td>
+                        <td><strong>{{ item.fv_id|default:"—" }}</strong></td>
+                        <td>
+                            {% if item.is_active %}<span class="badge badge--success">{{ T.active }}</span>{% else %}<span class="badge badge--muted">{{ T.inactive }}</span>{% endif %}
+                        </td>
+                        <td>{{ item.date_joined|date:"d M Y" }}</td>
+                        <td class="table-action"><a href="{{ item.get_absolute_url }}" class="icon-button icon-button--soft">{% include "partials/icon.html" with name="eye" %}</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-foot panel-foot--pagination">
+            <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+            {% include "partials/pagination.html" %}
+        </div>
+    {% else %}
+        {% include "partials/empty.html" with title="No users found" text="Try different filters or add a user." %}
+    {% endif %}
+</div>
+{% endblock %}

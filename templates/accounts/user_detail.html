@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ profile_user.display_name }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <a href="{% url 'accounts:user_list' %}" class="back-link">← {{ T.users }}</a>
+        <div class="profile-heading">
+            <span class="avatar avatar--xl">{{ profile_user.display_name|initials }}</span>
+            <div>
+                <h1>{{ profile_user.display_name }}</h1>
+                <p>{{ profile_user.get_role_display }} · {{ profile_user.email }}</p>
+                <div class="badge-row">
+                    <span class="badge badge--{{ profile_user.role|role_tone }}">{{ profile_user.role_label }}</span>
+                    {% if profile_user.is_active %}<span class="badge badge--success">{{ T.active }}</span>{% else %}<span class="badge badge--muted">{{ T.inactive }}</span>{% endif %}
+                    {% if profile_user.fv_id %}<span class="badge badge--gold">{{ profile_user.fv_id }}</span>{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if user.can_manage_users %}
+        <div class="page-actions">
+            <a href="{% url 'accounts:user_edit' profile_user.pk %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="edit" %} {{ T.edit }}</a>
+            <a href="{% url 'accounts:user_reset_password' profile_user.pk %}" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="lock" %} Reset password</a>
+            {% if profile_user.pk != user.pk %}
+                <form method="post" action="{% url 'accounts:user_toggle' profile_user.pk %}" data-confirm="{% if profile_user.is_active %}{{ T.confirm_deactivate }}{% else %}Activate this account?{% endif %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn {% if profile_user.is_active %}btn--danger{% else %}btn--success{% endif %} btn--sm">{% if profile_user.is_active %}Deactivate{% else %}Activate{% endif %}</button>
+                </form>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<div class="detail-layout">
+    <div class="detail-main">
+        <section class="panel">
+            <div class="panel-head"><div><h2>Account details</h2><p>Identity and contact information</p></div></div>
+            <div class="detail-grid detail-grid--three">
+                <div class="detail-item"><span>{{ T.username }}</span><strong>{{ profile_user.username }}</strong></div>
+                <div class="detail-item"><span>{{ T.email }}</span><strong>{{ profile_user.email }}</strong></div>
+                <div class="detail-item"><span>{{ T.phone }}</span><strong><bdi dir="ltr">{{ profile_user.phone|default:"-" }}</bdi></strong></div>
+                <div class="detail-item"><span>{{ T.branch }}</span><strong>{{ profile_user.branch|default:"—" }}</strong></div>
+                <div class="detail-item"><span>{{ T.role }}</span><strong>{{ profile_user.role_label }}</strong></div>
+                <div class="detail-item"><span>Approved at</span><strong>{{ profile_user.approved_at|date:"d M Y, H:i"|default:"—" }}</strong></div>
+                <div class="detail-item"><span>Joined</span><strong>{{ profile_user.date_joined|date:"d M Y" }}</strong></div>
+                <div class="detail-item"><span>Last login</span><strong>{{ profile_user.last_login|date:"d M Y, H:i"|default:"Never" }}</strong></div>
+                <div class="detail-item"><span>Last IP</span><strong>{{ profile_user.last_login_ip|default:"—" }}</strong></div>
+            </div>
+        </section>
+
+        {% if profile_user.is_fo %}
+            <section class="panel">
+                <div class="panel-head"><div><h2>FO profile</h2><p>Field officer record</p></div></div>
+                <div class="detail-grid detail-grid--three">
+                    <div class="detail-item"><span>{{ T.father_name }}</span><strong>{{ profile_user.fo_profile.father_name|default:"—" }}</strong></div>
+                    <div class="detail-item"><span>{{ T.cnic }}</span><strong>{{ profile_user.fo_profile.cnic|default:"—" }}</strong></div>
+                    <div class="detail-item"><span>{{ T.education }}</span><strong>{{ profile_user.fo_profile.education|default:"—" }}</strong></div>
+                    <div class="detail-item"><span>{{ T.experience }}</span><strong>{{ profile_user.fo_profile.experience_years }}</strong></div>
+                    <div class="detail-item"><span>{{ T.area }}</span><strong>{{ profile_user.fo_profile.area|default:"—" }}</strong></div>
+                    <div class="detail-item"><span>{{ T.city }}</span><strong>{{ profile_user.fo_profile.city|default:"—" }}</strong></div>
+                    <div class="detail-item"><span>Date of joining</span><strong>{{ profile_user.fo_profile.date_of_joining|date:"d M Y"|default:"—" }}</strong></div>
+                    <div class="detail-item"><span>Emergency contact</span><strong>{{ profile_user.fo_profile.emergency_contact|default:"—" }}</strong></div>
+                </div>
+            </section>
+        {% elif profile_user.is_dealer %}
+            <section class="panel">
+                <div class="panel-head"><div><h2>Dealer profile</h2><p>Dealer record</p></div></div>
+                <div class="detail-grid detail-grid--three">
+                    <div class="detail-item"><span>{{ T.father_name }}</span><strong>{{ profile_user.dealer_profile.father_name|default:"—" }}</strong></div>
+                    <div class="detail-item"><span>{{ T.cnic }}</span><strong>{{ profile_user.dealer_profile.cnic|default:"—" }}</strong></div>
+                    <div class="detail-item"><span>{{ T.business_name }}</span><strong>{{ profile_user.dealer_profile.business_name|default:"—" }}</strong></div>
+                    <div class="detail-item"><span>{{ T.experience }}</span><strong>{{ profile_user.dealer_profile.experience_years }}</strong></div>
+                    <div class="detail-item"><span>{{ T.area }}</span><strong>{{ profile_user.dealer_profile.area|default:"—" }}</strong></div>
+                    <div class="detail-item"><span>{{ T.city }}</span><strong>{{ profile_user.dealer_profile.city|default:"—" }}</strong></div>
+                </div>
+            </section>
+        {% endif %}
+    </div>
+
+    <aside class="detail-side">
+        <section class="panel">
+            <div class="panel-head"><div><h2>Permissions</h2><p>Approval authority</p></div></div>
+            <div class="permission-list">
+                <div class="permission-row">
+                    <span>{{ T.can_review }}</span>
+                    {% if profile_user.can_review_registrations %}<span class="badge badge--success">Yes</span>{% else %}<span class="badge badge--muted">No</span>{% endif %}
+                </div>
+                <div class="permission-row">
+                    <span>{{ T.can_final_approve }}</span>
+                    {% if profile_user.can_final_approve %}<span class="badge badge--success">Yes</span>{% else %}<span class="badge badge--muted">No</span>{% endif %}
+                </div>
+                <div class="permission-row">
+                    <span>Reports access</span>
+                    {% if profile_user.can_access_reports %}<span class="badge badge--success">Yes</span>{% else %}<span class="badge badge--muted">No</span>{% endif %}
+                </div>
+            </div>
+        </section>
+        <section class="panel">
+            <div class="panel-head"><div><h2>{{ T.recent_activity }}</h2><p>Account actions</p></div></div>
+            {% if profile_user.activity_logs.all %}
+                <div class="activity-list activity-list--compact">
+                    {% for log in profile_user.activity_logs.all|slice:":8" %}
+                        <div class="activity-item">
+                            <span class="activity-dot"></span>
+                            <div><p>{{ log.description|default:log.action }}</p><small>{{ log.created_at|date:"d M, H:i" }}</small></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {% include "partials/empty.html" with title="No activity yet" text="This account has no recorded actions." %}
+            {% endif %}
+        </section>
+    </aside>
+</div>
+{% endblock %}

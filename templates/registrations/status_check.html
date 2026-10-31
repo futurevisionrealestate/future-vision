@@ -1,0 +1,54 @@
+{% extends "base_public.html" %}
+{% load core_tags %}
+{% block title %}{{ T.status_check_title }}{% endblock %}
+{% block content %}
+<section class="status-page">
+    <div class="status-card">
+        <span class="eyebrow">Application tracker</span>
+        <h1>{{ T.status_check_title }}</h1>
+        <p>{{ T.status_check_help }}</p>
+        {% if error %}
+            <div class="form-errors"><p>{{ error }}</p></div>
+        {% endif %}
+        <form method="post" class="status-form" novalidate>
+            {% csrf_token %}
+            {% include "partials/field.html" with field=form.request_no %}
+            {% include "partials/field.html" with field=form.phone_or_cnic %}
+            <button type="submit" class="btn btn--primary btn--full">{{ T.check_status }}</button>
+        </form>
+        {% if result %}
+            <div class="status-result">
+                <div class="status-result__head">
+                    <div>
+                        <span class="eyebrow">{{ T.application_no }}</span>
+                        <strong>{{ result.request_no }}</strong>
+                    </div>
+                    <span class="badge badge--{{ result.status|status_tone }}">{{ result.get_status_display }}</span>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><span>{{ T.name }}</span><strong>{{ result.full_name }}</strong></div>
+                    <div class="detail-item"><span>{{ T.applicant_type }}</span><strong>{{ result.get_applicant_type_display }}</strong></div>
+                    <div class="detail-item"><span>{{ T.branch }}</span><strong>{{ result.branch|default:"—" }}</strong></div>
+                    <div class="detail-item"><span>{{ T.submitted }}</span><strong>{{ result.created_at|date:"d M Y, H:i" }}</strong></div>
+                    {% if result.reviewed_at %}
+                        <div class="detail-item"><span>{{ T.reviewed }}</span><strong>{{ result.reviewed_at|date:"d M Y, H:i" }}</strong></div>
+                    {% endif %}
+                    {% if result.approved_at %}
+                        <div class="detail-item"><span>{{ T.decided }}</span><strong>{{ result.approved_at|date:"d M Y, H:i" }}</strong></div>
+                    {% endif %}
+                    {% if result.fv_id_issued %}
+                        <div class="detail-item"><span>Future Vision ID</span><strong class="text-gold">{{ result.fv_id_issued }}</strong></div>
+                    {% endif %}
+                </div>
+                {% if result.rejection_reason %}
+                    <div class="notice notice--danger"><strong>{{ T.rejection_reason }}</strong><p>{{ result.rejection_reason }}</p></div>
+                {% endif %}
+                {% if result.status == "APPROVED" %}
+                    <a href="{% url 'accounts:login' %}" class="btn btn--primary btn--full">Log in with your account</a>
+                {% endif %}
+            </div>
+        {% endif %}
+        <p class="status-card__foot">{{ T.already_applied }} <a href="{% url 'core:home' %}" class="text-link">Back to home</a></p>
+    </div>
+</section>
+{% endblock %}

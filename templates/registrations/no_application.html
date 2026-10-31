@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ T.application_status }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">Your account</span>
+        <h1>{{ T.application_status }}</h1>
+        <p>Your Future Vision account is active.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'registrations:status_check' %}" class="btn btn--ghost btn--sm">{{ T.check_status }}</a>
+    </div>
+</div>
+
+<div class="status-overview">
+    <section class="panel status-overview__main">
+        <div class="status-overview__head">
+            <div>
+                <span class="eyebrow">Approved account</span>
+                <h2>{{ user.display_name }}</h2>
+                <p>{{ user.role_label }}{% if user.branch %} · {{ user.branch }}{% endif %}</p>
+            </div>
+            <span class="badge badge--success badge--lg">{{ T.active }}</span>
+        </div>
+        {% if user.fv_id %}
+            <div class="id-card">
+                <span>Future Vision ID</span>
+                <strong>{{ user.fv_id }}</strong>
+                <small>This is your permanent network identity.</small>
+            </div>
+        {% endif %}
+        <div class="detail-grid detail-grid--three">
+            <div class="detail-item"><span>{{ T.email }}</span><strong>{{ user.email }}</strong></div>
+            <div class="detail-item"><span>{{ T.phone }}</span><strong><bdi dir="ltr">{{ user.phone|default:"-" }}</bdi></strong></div>
+            <div class="detail-item"><span>Approved at</span><strong>{{ user.approved_at|date:"d M Y"|default:"—" }}</strong></div>
+        </div>
+        <div class="notice notice--info">
+            <strong>No application record on file</strong>
+            <p>This account was created directly by an administrator, so there is no public application to track.</p>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><div><h2>Account status</h2><p>Your access is ready</p></div></div>
+        <div class="timeline">
+            <div class="timeline-item">
+                <span class="timeline-dot timeline-dot--approve"></span>
+                <div><strong>Account activated</strong><p>{{ user.approved_at|date:"d M Y, H:i"|default:"Active" }}</p></div>
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-dot timeline-dot--approve"></span>
+                <div><strong>Network access</strong><p>You can now manage your Future Vision records.</p></div>
+            </div>
+        </div>
+        <a href="{% url 'core:dashboard' %}" class="btn btn--primary btn--block">{{ T.dashboard }}</a>
+    </section>
+</div>
+{% endblock %}

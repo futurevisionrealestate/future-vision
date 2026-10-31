@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.notifications }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.account }}</span>
+        <h1>{{ T.notifications }}</h1>
+        <p>Approval decisions, approvals, and account updates.</p>
+    </div>
+    {% if page_obj.object_list %}
+        <form method="post" action="{% url 'core:notifications_read_all' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn--ghost btn--sm">{% include "partials/icon.html" with name="check" %} {{ T.mark_all_read }}</button>
+        </form>
+    {% endif %}
+</div>
+
+<div class="panel panel--flush">
+    {% if page_obj.object_list %}
+        <div class="notification-list">
+            {% for note in page_obj %}
+                <a href="{% url 'core:notification_open' note.pk %}" class="notification-row {% if not note.is_read %}is-unread{% endif %}">
+                    <span class="notification-row__dot"></span>
+                    <span class="notification-row__icon">{% include "partials/icon.html" with name="bell" %}</span>
+                    <span class="notification-row__body">
+                        <strong>{{ note.title }}</strong>
+                        <p>{{ note.message }}</p>
+                        <small>{{ note.created_at|date:"d M Y, H:i" }}</small>
+                    </span>
+                    {% if not note.is_read %}<span class="badge badge--info">New</span>{% endif %}
+                </a>
+            {% endfor %}
+        </div>
+        <div class="panel-foot panel-foot--pagination">
+            <span>{{ page_obj.paginator.count }} notifications</span>
+            {% include "partials/pagination.html" %}
+        </div>
+    {% else %}
+        {% include "partials/empty.html" with title="No notifications yet" text="Updates about your application and account will appear here." %}
+    {% endif %}
+</div>
+{% endblock %}

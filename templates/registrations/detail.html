@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ registration.request_no }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <a href="{% url 'registrations:list' %}" class="back-link">← {{ T.registrations }}</a>
+        <span class="eyebrow">{{ T.application_no }}</span>
+        <h1>{{ registration.full_name }}</h1>
+        <p>{{ registration.request_no }} · {{ registration.get_applicant_type_display }} · {{ registration.created_at|date:"d M Y, H:i" }}</p>
+    </div>
+    <div class="page-actions">
+        <span class="badge badge--{{ registration.status|status_tone }} badge--lg">{{ registration.get_status_display }}</span>
+    </div>
+</div>
+
+{% if registration.rejection_reason %}
+    <div class="notice notice--danger"><strong>{{ T.rejection_reason }}</strong><p>{{ registration.rejection_reason }}</p></div>
+{% endif %}
+{% if registration.status == "APPROVED" %}
+    <div class="notice notice--success"><strong>Approved</strong><p>Future Vision ID <strong>{{ registration.fv_id_issued }}</strong> was issued and the account is active.</p></div>
+{% endif %}
+
+<div class="detail-layout">
+    <div class="detail-main">
+        <section class="panel">
+            <div class="panel-head"><div><h2>Applicant details</h2><p>Information submitted with the application</p></div></div>
+            <div class="detail-grid detail-grid--three">
+                <div class="detail-item"><span>{{ T.full_name }}</span><strong>{{ registration.full_name }}</strong></div>
+                <div class="detail-item"><span>{{ T.father_name }}</span><strong>{{ registration.father_name|default:"—" }}</strong></div>
+                <div class="detail-item"><span>{{ T.cnic }}</span><strong>{{ registration.cnic|default:"—" }}</strong></div>
+                <div class="detail-item"><span>{{ T.phone }}</span><strong><a href="tel:{{ registration.phone }}" class="ltr-inline">{{ registration.phone }}</a></strong></div>
+                <div class="detail-item"><span>{{ T.email }}</span><strong>{{ registration.email }}</strong></div>
+                <div class="detail-item"><span>{{ T.city }}</span><strong>{{ registration.city|default:"—" }}</strong></div>
+                <div class="detail-item"><span>{{ T.address }}</span><strong>{{ registration.address|default:"—" }}</strong></div>
+                <div class="detail-item"><span>{{ T.branch }}</span><strong>{{ registration.branch|default:"—" }}</strong></div>
+                <div class="detail-item"><span>{{ T.experience }}</span><strong>{{ registration.experience_years }}</strong></div>
+                <div class="detail-item"><span>{{ T.education }}</span><strong>{{ registration.education|default:"—" }}</strong></div>
+                <div class="detail-item"><span>{{ T.area }}</span><strong>{{ registration.area|default:"—" }}</strong></div>
+                {% if registration.business_name %}
+                    <div class="detail-item"><span>{{ T.business_name }}</span><strong>{{ registration.business_name }}</strong></div>
+                    <div class="detail-item"><span>{{ T.business_address }}</span><strong>{{ registration.business_address|default:"—" }}</strong></div>
+                {% endif %}
+            </div>
+            {% if registration.notes %}<div class="detail-block"><span>Applicant notes</span><p class="prose">{{ registration.notes|linebreaksbr }}</p></div>{% endif %}
+        </section>
+
+        <section class="panel">
+            <div class="panel-head"><div><h2>Decision history</h2><p>Full audit trail for this application</p></div></div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <span class="timeline-dot"></span>
+                    <div><strong>Application submitted</strong><p>{{ registration.created_at|date:"d M Y, H:i" }} · {{ registration.get_source_display }}</p></div>
+                </div>
+                {% for log in approval_logs %}
+                    <div class="timeline-item">
+                        <span class="timeline-dot timeline-dot--{{ log.action|lower }}"></span>
+                        <div>
+                            <strong>{{ log.get_action_display }}</strong>
+                            <p>{{ log.created_at|date:"d M Y, H:i" }} · {{ log.actor.display_name|default:"System" }}</p>
+                            {% if log.notes %}<p class="muted">{{ log.notes }}</p>{% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                {% if registration.status == "APPROVED" %}
+                    <div class="timeline-item">
+                        <span class="timeline-dot timeline-dot--approve"></span>
+                        <div><strong>ID issued</strong><p>{{ registration.fv_id_issued }} · {{ registration.approved_at|date:"d M Y, H:i" }}</p></div>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <aside class="detail-side">
+        <section class="panel">
+            <div class="panel-head"><div><h2>{{ T.actions }}</h2><p>Process this application</p></div></div>
+            {% if can_review %}
+                <form method="post" action="{% url 'registrations:review' registration.pk %}" class="action-form">
+                    {% csrf_token %}
+                    {% include "partials/field.html" with field=review_form.notes %}
+                    <button type="submit" class="btn btn--dark btn--full">{{ T.review }}</button>
+                </form>
+            {% endif %}
+
+            {% if can_approve %}
+                <form method="post" action="{% url 'registrations:approve' registration.pk %}" class="action-form" data-confirm="{{ T.approve_confirm }}">
+                    {% csrf_token %}
+                    <div class="field">
+                        <label for="approve-notes">{{ T.review_notes }}</label>
+                        <textarea name="notes" id="approve-notes" class="form-textarea" rows="2" placeholder="Optional approval notes"></textarea>
+                    </div>
+                    {% if site.require_review and registration.status == "PENDING" %}
+                        <p class="form-hint form-hint--warning">This application must be reviewed before final approval.</p>
+                        <button type="submit" class="btn btn--success btn--full" disabled>{{ T.approve }}</button>
+                    {% else %}
+                        <button type="submit" class="btn btn--success btn--full">{% include "partials/icon.html" with name="check" %} {{ T.approve }}</button>
+                    {% endif %}
+                </form>
+            {% endif %}
+
+            {% if can_reject %}
+                <details class="reject-details">
+                    <summary>{{ T.reject }} application</summary>
+                    <form method="post" action="{% url 'registrations:reject' registration.pk %}" class="action-form" data-confirm="{{ T.confirm_reject }}">
+                        {% csrf_token %}
+                        {% include "partials/field.html" with field=reject_form.reason %}
+                        <button type="submit" class="btn btn--danger btn--full">{{ T.reject }}</button>
+                    </form>
+                </details>
+            {% endif %}
+
+            {% if not can_review and not can_approve and not can_reject %}
+                <p class="muted">No action is available for this application in its current state.</p>
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <div class="panel-head"><div><h2>Review info</h2></div></div>
+            <div class="meta-list">
+                <div><span>{{ T.submitted }}</span><strong>{{ registration.created_at|date:"d M Y, H:i" }}</strong></div>
+                {% if registration.reviewed_by %}<div><span>{{ T.reviewed_by }}</span><strong>{{ registration.reviewed_by.display_name }}</strong></div>{% endif %}
+                {% if registration.reviewed_at %}<div><span>{{ T.reviewed }}</span><strong>{{ registration.reviewed_at|date:"d M Y, H:i" }}</strong></div>{% endif %}
+                {% if registration.approved_by %}<div><span>{{ T.approved_by }}</span><strong>{{ registration.approved_by.display_name }}</strong></div>{% endif %}
+                {% if registration.rejected_by %}<div><span>Rejected by</span><strong>{{ registration.rejected_by.display_name }}</strong></div>{% endif %}
+                {% if registration.review_notes %}<div><span>{{ T.review_notes }}</span><strong>{{ registration.review_notes }}</strong></div>{% endif %}
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}

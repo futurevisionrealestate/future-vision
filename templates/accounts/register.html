@@ -1,0 +1,85 @@
+{% extends "base_public.html" %}
+{% load core_tags %}
+{% block title %}{{ T.apply_now }}{% endblock %}
+{% block content %}
+<section class="page-hero page-hero--compact">
+    <span class="eyebrow">Future Vision network</span>
+    <h1>{{ T.apply_now }}</h1>
+    <p>{{ T.apply_help }}</p>
+</section>
+
+<section class="form-shell">
+    <div class="form-card form-card--wide">
+        {% if form.non_field_errors %}
+            <div class="form-errors">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>
+        {% endif %}
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <fieldset class="form-section">
+                <legend><span>01</span> Applicant details</legend>
+                <div class="form-grid form-grid--two">
+                    {% include "partials/field.html" with field=form.applicant_type %}
+                    {% include "partials/field.html" with field=form.first_name %}
+                    {% include "partials/field.html" with field=form.last_name %}
+                    {% include "partials/field.html" with field=form.father_name %}
+                    {% include "partials/field.html" with field=form.cnic %}
+                    {% include "partials/field.html" with field=form.phone %}
+                </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend><span>02</span> Contact & location</legend>
+                <div class="form-grid form-grid--two">
+                    {% include "partials/field.html" with field=form.email %}
+                    {% include "partials/field.html" with field=form.city %}
+                    {% include "partials/field.html" with field=form.area %}
+                    {% include "partials/field.html" with field=form.branch %}
+                    {% include "partials/field.html" with field=form.address %}
+                </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend><span>03</span> Professional details</legend>
+                <div class="form-grid form-grid--two">
+                    {% include "partials/field.html" with field=form.education %}
+                    {% include "partials/field.html" with field=form.experience_years %}
+                    {% include "partials/field.html" with field=form.business_name %}
+                    {% include "partials/field.html" with field=form.business_address %}
+                    {% include "partials/field.html" with field=form.notes %}
+                </div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend><span>04</span> Secure your account</legend>
+                <div class="form-grid form-grid--two">
+                    {% include "partials/field.html" with field=form.username %}
+                    {% include "partials/field.html" with field=form.password1 %}
+                    {% include "partials/field.html" with field=form.password2 %}
+                </div>
+                <p class="form-hint">Use at least 10 characters. Your account stays inactive until Head Office approves your application.</p>
+            </fieldset>
+
+            <div class="form-section form-section--terms">
+                {% include "partials/field.html" with field=form.terms %}
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'accounts:login' %}" class="btn btn--ghost">{{ T.cancel }}</a>
+                <button type="submit" class="btn btn--primary">{{ T.submit }}</button>
+            </div>
+        </form>
+    </div>
+    <aside class="form-aside">
+        <span class="feature-icon feature-icon--gold">{% include "partials/icon.html" with name="shield" %}</span>
+        <h3>What happens next?</h3>
+        <ol class="check-list">
+            <li><span>1</span> Application received</li>
+            <li><span>2</span> Head Office review</li>
+            <li><span>3</span> Authorized approval</li>
+            <li><span>4</span> Unique FV ID issued</li>
+        </ol>
+        <p class="muted">You can check your status at any time with your application number and phone/CNIC.</p>
+        <a href="{% url 'registrations:status_check' %}" class="text-link">{{ T.check_status }} →</a>
+    </aside>
+</section>
+{% endblock %}

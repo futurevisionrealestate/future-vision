@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load core_tags %}
+{% block title %}{{ T.targets }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div>
+        <span class="eyebrow">{{ T.operations }}</span>
+        <h1>{{ T.targets }}</h1>
+        <p>Daily property registration targets and achievement.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'operations:target_create' %}" class="btn btn--primary btn--sm">{% include "partials/icon.html" with name="plus" %} {{ T.set_target }}</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <div class="filter-field">
+        <label for="start">From</label>
+        <input type="date" name="start" id="start" value="{{ start|date:'Y-m-d' }}" class="form-input">
+    </div>
+    <div class="filter-field">
+        <label for="end">To</label>
+        <input type="date" name="end" id="end" value="{{ end|date:'Y-m-d' }}" class="form-input">
+    </div>
+    <button type="submit" class="btn btn--dark btn--sm">{{ T.filter }}</button>
+    <a href="{% url 'operations:target_list' %}" class="btn btn--ghost btn--sm">{{ T.cancel }}</a>
+</form>
+
+<div class="panel panel--flush">
+    {% if page_obj.object_list %}
+        <div class="table-wrap">
+            <span class="table-scroll-hint">→</span>
+            <table class="data-table">
+                <thead><tr><th>{{ T.name }}</th><th>{{ T.date }}</th><th>{{ T.target_count }}</th><th>{{ T.achieved }}</th><th>{{ T.progress }}</th><th>{{ T.notes }}</th></tr></thead>
+                <tbody>
+                {% for target in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="table-user">
+                                <span class="avatar avatar--xs">{{ target.user.display_name|initials }}</span>
+                                <div><span class="table-main">{{ target.user.display_name }}</span><small>{{ target.user.get_role_display }}{% if target.user.branch %} · {{ target.user.branch.name }}{% endif %}</small></div>
+                            </div>
+                        </td>
+                        <td>{{ target.date|date:"d M Y" }}</td>
+                        <td><strong>{{ target.target_count }}</strong></td>
+                        <td>{{ target.achieved_count }}</td>
+                        <td>
+                            <div class="progress-row">
+                                <div class="progress"><span style="width: {{ target.progress_percent }}%"></span></div>
+                                <small>{{ target.progress_percent }}%</small>
+                            </div>
+                        </td>
+                        <td>{{ target.notes|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-foot panel-foot--pagination">
+            <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+            {% include "partials/pagination.html" %}
+        </div>
+    {% else %}
+        {% include "partials/empty.html" with title="No targets found" text="Set the first daily target for your team." %}
+    {% endif %}
+</div>
+{% endblock %}

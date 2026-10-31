@@ -1,0 +1,10 @@
+Django>=5.2,<5.3
+Pillow>=11.0
+djangorestframework>=3.16
+django-cors-headers>=4.7
+whitenoise>=6.9
+dj-database-url>=3.0
+python-dotenv>=1.0
+drf-spectacular>=0.28
+gunicorn>=23.0; platform_system != "Windows"
+psycopg[binary]>=3.2; platform_system != "Windows"

@@ -1,0 +1,95 @@
+{% load static core_tags i18n %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if is_urdu %}rtl{% else %}ltr{% endif %}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{{ site.company_name }} secure staff portal">
+    <title>{% block title %}{{ T.login }}{% endblock %} · {{ site.company_name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}?v=1">
+    <link rel="icon" type="image/jpeg" href="{% static 'img/logo.jpeg' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="auth-body">
+    <div class="auth-page">
+        <aside class="auth-brand">
+            <div class="auth-brand__orb auth-brand__orb--one" aria-hidden="true"></div>
+            <div class="auth-brand__orb auth-brand__orb--two" aria-hidden="true"></div>
+
+            <a href="{% url 'core:home' %}" class="auth-brand__logo">
+                <span class="auth-logo-tile"><img src="{% static 'img/logo.jpeg' %}" alt="{{ site.company_name }}"></span>
+                <span class="auth-brand__name">
+                    <strong>{{ site.company_name }}</strong>
+                    <small>{{ site.tagline }}</small>
+                </span>
+            </a>
+
+            <div class="auth-brand__content">
+                <span class="auth-brand__badge"><span class="auth-brand__badge-dot"></span> {{ T.auth_portal_badge }}</span>
+                <h1>{{ T.auth_brand_title }}</h1>
+                <p>{{ T.auth_brand_sub }}</p>
+
+                <ul class="auth-features">
+                    <li>
+                        <span class="auth-feature__icon">{% include "partials/icon.html" with name="shield" %}</span>
+                        <span class="auth-feature__text">
+                            <strong>{{ T.auth_point_1_title }}</strong>
+                            <small>{{ T.auth_point_1_text }}</small>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="auth-feature__icon">{% include "partials/icon.html" with name="clipboard" %}</span>
+                        <span class="auth-feature__text">
+                            <strong>{{ T.auth_point_2_title }}</strong>
+                            <small>{{ T.auth_point_2_text }}</small>
+                        </span>
+                    </li>
+                    <li>
+                        <span class="auth-feature__icon">{% include "partials/icon.html" with name="chart" %}</span>
+                        <span class="auth-feature__text">
+                            <strong>{{ T.auth_point_3_title }}</strong>
+                            <small>{{ T.auth_point_3_text }}</small>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="auth-brand__footer">
+                <div class="auth-brand__contact">
+                    {% if site.phone %}<span>{% include "partials/icon.html" with name="phone" %} {{ site.phone }}</span>{% endif %}
+                    {% if site.email %}<span>{% include "partials/icon.html" with name="mail" %} {{ site.email }}</span>{% endif %}
+                </div>
+                <small>© {% now "Y" %} {{ site.company_name }}</small>
+            </div>
+        </aside>
+
+        <main class="auth-main">
+            <div class="auth-topbar">
+                <form action="{% url 'set_language' %}" method="post" class="lang-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <button type="submit" name="language" value="{% if is_urdu %}en{% else %}ur{% endif %}" class="lang-switch" title="{{ T.language }}">
+                        {% if is_urdu %}English{% else %}اردو{% endif %}
+                    </button>
+                </form>
+                {% if site.phone %}
+                    <a href="tel:{{ site.phone }}" class="auth-support-link">{% include "partials/icon.html" with name="phone" %} <span>{{ T.auth_contact_office }}</span></a>
+                {% endif %}
+            </div>
+
+            <div class="auth-panel">
+                {% include "partials/messages.html" %}
+                {% block content %}{% endblock %}
+            </div>
+
+            <p class="auth-version">{{ site.company_name }} · v{{ APP_VERSION }}</p>
+        </main>
+    </div>
+    <script src="{% static 'js/app.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
